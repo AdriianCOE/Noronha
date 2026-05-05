@@ -28,6 +28,12 @@ O objetivo do projeto é trazer uma experiência de sobrevivência com identidad
 
 ---
 
+<div align="center">
+  <img src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" width="100%" alt="Mapa de Fernando de Noronha no DayZ"/>
+</div>
+
+---
+
 ##  Área jogável
 
 O mapa busca recriar o arquipélago de Fernando de Noronha em escala **1:1**, oferecendo um cenário detalhado e imersivo com aproximadamente:
