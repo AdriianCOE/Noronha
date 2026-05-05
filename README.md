@@ -13,7 +13,7 @@
 <br/><br/>
 
 <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894" target="_blank">
-  <img src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" width="55%" alt="Mapa de Fernando de Noronha no DayZ" />
+  <img src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" width="30%" alt="Mapa de Fernando de Noronha no DayZ" />
 </a>
 
 <br/><br/>
