@@ -10,6 +10,33 @@
   <img src="https://img.shields.io/badge/Acessar_na_Steam_Workshop-171A21?style=for-the-badge&logo=steam&logoColor=white" alt="Steam Workshop" />
 </a>
 
+  <a href="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" target="_blank">
+    <img 
+      src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" 
+      width="50%" 
+      style="border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.3s ease;"
+      onmouseover="this.style.transform='scale(1.05)'" 
+      onmouseout="this.style.transform='scale(1)'"
+      alt="Mapa de Fernando de Noronha no DayZ"
+    />
+  </a>
+
+  <br/>
+
+<br/><br/>
+
+** WORK IN PROGRESS **
+
+</div>
+      style="border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.3s ease;"
+      onmouseover="this.style.transform='scale(1.03)'" 
+      onmouseout="this.style.transform='scale(1)'"
+      alt="Mapa de Fernando de Noronha no DayZ"
+    />
+  </a>
+
+  <br/>
+
 <br/><br/>
 
 ** WORK IN PROGRESS **
@@ -27,25 +54,6 @@ O objetivo do projeto é trazer uma experiência de sobrevivência com identidad
 > **Aviso:** O mapa ainda está em desenvolvimento ativo. Isso significa que terreno, sistema de loot, vegetação, construções, áreas jogáveis e balanceamento geral passarão por mudanças e melhorias frequentes.
 
 ---
-
-
-##   Mapa Atual: (SatMap)
-
-<div align="center">
-
-  <a href="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" target="_blank">
-    <img 
-      src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" 
-      width="75%" 
-      style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.3s ease;"
-      onmouseover="this.style.transform='scale(1.03)'" 
-      onmouseout="this.style.transform='scale(1)'"
-      alt="Mapa de Fernando de Noronha no DayZ"
-    />
-  </a>
-
-  <br/>
-  <sub>Clique para ampliar</sub>
 
 </div>
 
