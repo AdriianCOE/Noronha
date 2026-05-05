@@ -28,11 +28,26 @@ O objetivo do projeto é trazer uma experiência de sobrevivência com identidad
 
 ---
 
-<div align="center">
-  <img src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" width="100%" alt="Mapa de Fernando de Noronha no DayZ"/>
-</div>
 
----
+##   Mapa Atual: (SatMap)
+
+<div align="center">
+
+  <a href="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" target="_blank">
+    <img 
+      src="https://images.steamusercontent.com/ugc/16706076935950692857/AB074CF857EDDDD21454844CC70E80C6E2197F8B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" 
+      width="75%" 
+      style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.3s ease;"
+      onmouseover="this.style.transform='scale(1.03)'" 
+      onmouseout="this.style.transform='scale(1)'"
+      alt="Mapa de Fernando de Noronha no DayZ"
+    />
+  </a>
+
+  <br/>
+  <sub>Clique para ampliar</sub>
+
+</div>
 
 ##  Área jogável
 
@@ -41,7 +56,7 @@ O mapa busca recriar o arquipélago de Fernando de Noronha em escala **1:1**, of
 <br/>
 
 <div align="center">
-  <code>📍 26 km² de área terrestre jogável</code>
+  <code>  26 km² de área terrestre jogável</code>
 </div>
 
 <br/>
