@@ -12,7 +12,7 @@
 
 <br/><br/>
 
-** WORK IN PROGRESS 🚧**
+** WORK IN PROGRESS **
 
 </div>
 
