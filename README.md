@@ -28,20 +28,20 @@
 
 ##   Sobre o projeto
 
-**Fernando de Noronha** é um mapa customizado em desenvolvimento para **DayZ**, inspirado no famoso arquipélago brasileiro de mesmo nome. 
+**Fernando de Noronha** é um mapa custom em desenvolvimento para **DayZ**, inspirado no ilhas brasileiro de mesmo nome. 
 
-O objetivo do projeto é trazer uma experiência de sobrevivência com identidade nacional, misturando a tensão característica do jogo com:
+O objetivo do projeto é criar um mapa de sobrevivência com identidade brasileira, misturando a tensão característica do jogo com:
 *   Ambientação tropical imersiva
 *   Loot personalizado
 *   Exploração em um território realístico
 
-> **Aviso:** O mapa ainda está em desenvolvimento ativo. Isso significa que terreno, sistema de loot, vegetação, construções, áreas jogáveis e balanceamento geral passarão por mudanças e melhorias frequentes.
+> **Aviso:** O mapa ainda está em desenvolvimento nem perto de pronto. Isso significa que terreno, sistema de loot, vegetação, construções, áreas jogáveis e balanceamento geral passarão por mudanças e melhorias frequentes. (porém jogável)
 
 ---
 
 ##  Área jogável
 
-O mapa busca recriar o arquipélago de Fernando de Noronha em escala **1:1**, oferecendo um cenário detalhado e imersivo. A área totaliza aproximadamente:
+O mapa busca recriar as ilhas de Fernando de Noronha em escala **1:1**, oferecendo um cenário detalhado e imersivo. A área totaliza aproximadamente:
 
 <div align="center">
   <br/>
