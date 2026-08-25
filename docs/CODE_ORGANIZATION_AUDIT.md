@@ -79,6 +79,10 @@ ocorre na CE. Não alterar esse load order sem teste de montagem.
 - Python: compilação, import, setup do logger e `--help` do script aprovados.
 - Os quatro OGG de sons e a dependência `Noronha_Sounds` permanecem presentes.
 - Heightmap, WRP e navmesh devem manter os hashes registrados na baseline.
-- `CfgConvert` não está presente nesta instalação do DayZ Tools; configs foram
-  revisados estaticamente, mas alterações de config requerem validação pelo
-  toolchain antes de serem aplicadas.
+- `CfgConvert` do DayZ Tools foi localizado e validou cópias temporárias de
+  `data/config.cpp` e `navmesh/config.cpp`. A adição de metadata mudou os
+  binários temporários; logo a normalização permanece `REQUIRES_AUTHOR_RUNTIME_TEST`.
+- A referência detalhada de mundos, prefixes e toolchain está em
+  [DAYZ_WORLD_REFERENCE_AUDIT.md](DAYZ_WORLD_REFERENCE_AUDIT.md). A proposta
+  sem mudança de gameplay para `ce/init.c` está em
+  [CE_INIT_REFACTOR_PROPOSAL.md](CE_INIT_REFACTOR_PROPOSAL.md).
