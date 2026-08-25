@@ -22,9 +22,8 @@ Em 25/08/2026 foi construído um conjunto TEST separado (`Noronha_Items.pbo`,
 `world.pbo`, `navmesh.pbo`, `ce.pbo` e `data.pbo`) exclusivamente como
 diagnóstico com Addon Builder. Ele não representa a pipeline oficial, não deve
 ser montado, assinado ou publicado e não substitui o build manual futuro em PBO
-Project. A validação estática desse conjunto passou; o smoke test montado pelo
-autor é a porta restante para promover o WRP DEV e decidir o seu rastreamento
-por LFS.
+Project. A validação estática desse conjunto passou; ele continua apenas um
+artefato diagnóstico e não substitui o workflow manual do autor.
 
 Os comandos e as opções específicas de PBO Project ainda não foram comprovados
 e não estão versionados; registrá-los após o workflow manual estabilizar é um

@@ -22,7 +22,7 @@ cópia de referência imutável foi preservada fora do checkout em
 `P:\Noronha_Builds\test\Noronha\wrp-dev-authoritative-20260825`.
 
 O autor exportou-o manualmente via Terrain Builder a partir do projeto
-`P:\Saves\noronha.tv4p`, usando o heightmap
+`P:\Noronha_Workspace\terrain\noronha.tv4p`, usando o heightmap
 `72EC09E7934940EE8C69EF1B1C1620E533F655FE80385711D48FB090E7032322`
 (`TERRAIN_SOURCE_CURRENT`). O timestamp em disco desse projeto é anterior ao
 refresh manual; ele confirma a identidade do projeto, não substitui a
