@@ -16,6 +16,7 @@ class CfgPatches
             "DZ_Data",
             "DZ_Surfaces",
             "DZ_Surfaces_Bliss",
+            "Noronha_Sounds",
         };
         author="Adrian";
         name="Noronha";
