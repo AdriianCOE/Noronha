@@ -1,14 +1,31 @@
 # Build
 
-Pré-requisitos confirmados: DayZ Tools, Addon Builder, checkout do mapa em `P:\Noronha`, checkout de `Noronha_Items` em `P:\Noronha_Items`, e os dados privados do Terrain Builder/CE Editor.
+Pré-requisitos confirmados: DayZ Tools, PBO Project, checkout do mapa em
+`P:\Noronha`, checkout de `Noronha_Items` em `P:\Noronha_Items`, e os dados
+privados do Terrain Builder/CE Editor.
 
 Ordem conhecida:
 
-1. editar Terrain Builder e GIS no workspace privado;
-2. exportar/revisar WRP e navmesh; publicar no mapa somente artefatos identificados;
+1. Terrain Builder/GIS no workspace privado exporta `Noronha.wrp`;
+2. revisar WRP e navmesh e promover somente artefatos identificados e
+   validados;
 3. exportar CE para `Noronha/ce` e sincronizar a missão offline;
-4. buildar Noronha Items quando suas classes/texturas mudarem;
-5. buildar os PBOs do mapa com Addon Builder;
-6. testar a missão offline com a mesma combinação de PBOs.
+4. PBO Project é o workflow de build manual usado pelo autor para Noronha
+   Items e para os PBOs do mapa;
+5. o autor monta o mod, testa no DayZ e publica quando decidir.
 
-O procedimento exato de export do WRP/navmesh e de publicação Workshop ainda não está versionado. Isso é um TODO explícito, não uma instrução inventada.
+Layout de PBO do mapa preparado em source: `ce -> ce.pbo`, `data -> data.pbo`,
+`navmesh -> navmesh.pbo`, `world -> world.pbo` e `sounds -> sounds.pbo`.
+O prefixo do addon de sons é `Noronha\sounds`.
+
+Em 25/08/2026 foi construído um conjunto TEST separado (`Noronha_Items.pbo`,
+`world.pbo`, `navmesh.pbo`, `ce.pbo` e `data.pbo`) exclusivamente como
+diagnóstico com Addon Builder. Ele não representa a pipeline oficial, não deve
+ser montado, assinado ou publicado e não substitui o build manual futuro em PBO
+Project. A validação estática desse conjunto passou; o smoke test montado pelo
+autor é a porta restante para promover o WRP DEV e decidir o seu rastreamento
+por LFS.
+
+Os comandos e as opções específicas de PBO Project ainda não foram comprovados
+e não estão versionados; registrá-los após o workflow manual estabilizar é um
+TODO explícito. O procedimento de publicação Workshop também permanece manual.

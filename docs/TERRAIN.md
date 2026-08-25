@@ -12,4 +12,24 @@ O timestamp de filesystem observado na cópia promovida foi `2026-08-25T11:03:21
 
 `data/layers/*.paa`, `*.png` e `*.rvmat` são outputs runtime aprovados. Os RVMAT referenciam os PNG das layers diretamente, então todos os três tipos pertencem ao mapa oficial.
 
-O WRP é necessário para uma build jogável, mas a cópia correta não foi encontrada no inventário. Não gere ou adicione um WRP substituto sem confirmar que corresponde ao estado do projeto Terrain Builder.
+## WRP DEV atual
+
+Após o refresh do heightfield e export manual pelo autor em 25/08/2026, o WRP
+em `world/Noronha.wrp` foi identificado como `DEV_TEST_GENERATED`. Seu SHA-256
+é `03EA13E6F7ADED5BE4FDE6BC3685C596FE2C495B1EDC4C1AC2B6F6BE7189C682`, com
+6.253.435 bytes e timestamps observados entre `11:59:36` e `11:59:39` BRT. Uma
+cópia de referência imutável foi preservada fora do checkout em
+`P:\Noronha_Builds\test\Noronha\wrp-dev-authoritative-20260825`.
+
+O autor exportou-o manualmente via Terrain Builder a partir do projeto
+`P:\Saves\noronha.tv4p`, usando o heightmap
+`72EC09E7934940EE8C69EF1B1C1620E533F655FE80385711D48FB090E7032322`
+(`TERRAIN_SOURCE_CURRENT`). O timestamp em disco desse projeto é anterior ao
+refresh manual; ele confirma a identidade do projeto, não substitui a
+proveniência declarada pelo autor para este export.
+
+Este WRP é derivado da fonte `TERRAIN_SOURCE_CURRENT` acima, mas ainda não é
+um artefato LIVE nem `DEV_AUTHORITATIVE_RUNTIME`: o próximo gate é um build
+montado e smoke test. Até esse gate, não substituir WRP LIVE/local conhecido,
+não adicioná-lo por preenchimento e não iniciar o rastreamento LFS. A decisão
+de promoção deve ocorrer em commit separado após o teste.

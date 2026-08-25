@@ -31,7 +31,7 @@ Este é o repositório oficial do mapa: world, CE exportada, navmesh, sons, conf
 - Mapa Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894>
 - Noronha Items Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3698170839>
 
-A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE, terreno, build, desenvolvimento e responsabilidades entre repositórios. O WRP atual não foi localizado no inventário de agosto de 2026; ele não é inventado nem substituído por outro arquivo neste repositório.
+A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE, terreno, build, desenvolvimento e responsabilidades entre repositórios. O WRP DEV atual foi exportado em 25/08/2026 a partir da fonte de terreno confirmada pelo autor e está presente localmente como artefato de teste; ele aguarda smoke test montado antes de ser promovido ao estado versionado/LFS. Consulte [`docs/TERRAIN.md`](docs/TERRAIN.md) para a identidade, proveniência e limites dessa classificação.
 
 <br/>
 
