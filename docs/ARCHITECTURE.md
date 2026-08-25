@@ -11,6 +11,6 @@
 
 `Noronha2` é o projeto fonte do DayZ CE Editor. Seus exports são revisados e publicados em `Noronha/ce`; a missão offline não é um terceiro editor de balanceamento.
 
-Os PAA/RVMAT em `data/layers/` e `navmesh/navmesh.nm` são artefatos runtime necessários ao mapa e estão versionados. Os PNG intermediários de layers, GIS e imagens editáveis ficam no workspace privado.
+Os PAA/PNG/RVMAT em `data/layers/` e `navmesh/navmesh.nm` são artefatos runtime necessários ao mapa e estão versionados. Os RVMAT referenciam os PNG diretamente; por isso esses PNG não podem ser tratados como intermediários descartáveis. GIS e imagens editáveis ficam no workspace privado.
 
 O WRP não foi localizado durante esta reorganização. `world/config.cpp` continua apontando para `world/Noronha.wrp`; a origem e a versão correta desse arquivo precisam ser recuperadas antes de uma build pública completa.
