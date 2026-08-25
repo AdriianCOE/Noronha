@@ -3,3 +3,4 @@ data/layers/*.paa filter=lfs diff=lfs merge=lfs -text
 data/layers/*.png filter=lfs diff=lfs merge=lfs -text
 data/layers/*.rvmat -text whitespace=-trailing-space
 navmesh/*.nm filter=lfs diff=lfs merge=lfs -text
+world/*.wrp filter=lfs diff=lfs merge=lfs -text

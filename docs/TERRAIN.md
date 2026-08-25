@@ -28,8 +28,8 @@ O autor exportou-o manualmente via Terrain Builder a partir do projeto
 refresh manual; ele confirma a identidade do projeto, não substitui a
 proveniência declarada pelo autor para este export.
 
-Este WRP é derivado da fonte `TERRAIN_SOURCE_CURRENT` acima, mas ainda não é
-um artefato LIVE nem `DEV_AUTHORITATIVE_RUNTIME`: o próximo gate é um build
-montado e smoke test. Até esse gate, não substituir WRP LIVE/local conhecido,
-não adicioná-lo por preenchimento e não iniciar o rastreamento LFS. A decisão
-de promoção deve ocorrer em commit separado após o teste.
+O autor confirmou que este WRP exato foi usado em build manual e carregou
+corretamente no DayZ. Ele é, portanto, `DEV_AUTHORITATIVE_RUNTIME`, continua
+distinto de um artefato LIVE da Workshop e passa a ser rastreado por Git LFS
+como parte da baseline oficial de desenvolvimento. Não substituí-lo pelo WRP
+LIVE/local conhecido sem uma nova validação explícita.
