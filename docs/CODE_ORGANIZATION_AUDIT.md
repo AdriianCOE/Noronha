@@ -45,6 +45,24 @@ ocorre na CE. Não alterar esse load order sem teste de montagem.
 
 ## Itens mantidos sem mudança
 
+## Decisões finais desta etapa
+
+```text
+WORLD_CONFIG: KEEP_MONOLITHIC
+CONFIG_METADATA: DO_NOT_ADD_WITHOUT_RUNTIME_REASON
+DATA/NAVMESH DEPENDENCIES: KEEP_CURRENT
+PBOPREFIX: KEEP_CURRENT
+CE_INIT: SEMANTIC_REVIEW_LATER
+COASTAL_FILTERS: CONTENT_REVIEW_LATER
+```
+
+O teste A de 25/08/2026 demonstrou que somente a formatação de
+`data/config.cpp` e `navmesh/config.cpp` gera `config.bin` byte-identical via
+`CfgConvert`; essa alteração visual foi aplicada. O teste B demonstrou que
+`class cfgpatches` para `class CfgPatches` muda o binário do navmesh, logo a
+capitalização foi preservada. Não foram adicionados `units`, `weapons`,
+`requiredVersion` nem dependências.
+
 ### B — melhoria técnica que requer teste
 
 - Padronizar `data/config.cpp` e `navmesh/config.cpp`: `CfgPatches`, campos e
