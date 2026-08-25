@@ -1,0 +1,14 @@
+# Python tooling cache
+__pycache__/
+*.py[cod]
+
+# DayZ Tools build output
+*.pbo
+*.pbo.*
+*.binarized
+
+# Local editor state
+.vs/
+.vscode/
+Thumbs.db
+Desktop.ini

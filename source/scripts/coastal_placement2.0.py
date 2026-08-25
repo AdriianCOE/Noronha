@@ -3,13 +3,13 @@
 #  Autor: AdriianCOE
 # ==============================================================================
 
-import os
-import sys
+import argparse
 import math
 import random
 import json
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
@@ -20,14 +20,6 @@ try:
     NOISE_AVAILABLE = True
 except ImportError:
     NOISE_AVAILABLE = False
-
-# ==============================================================================
-#  CONFIGURACOES DO USUARIO
-# ==============================================================================
-
-OUTPUT_PATH_BASE  = "P:/Noronha/source/scripts/generated_coastal_objects"
-HEIGHTMAP_PATH    = "P:/Noronha/source/QGIS/gtt_heightmap.asc"
-SURFACEMAP_PATH   = "P:/Noronha/source/QGIS/gtt_mask_osm.bmp"
 
 RANDOM_SEED       = 42
 SEA_LEVEL         = 0.0
@@ -216,10 +208,6 @@ def generate_boats(height_data, hdr, surface_data, max_x, max_z, grid):
         if not is_color(get_surface_color(x, z, surface_data, max_x, max_z), COASTAL_COLOR): 
             continue
 
-        # ADICIONE ESTA LINHA AQUI:
-        if not is_real_island(x, z, height_data, hdr): 
-            continue
-
         cluster_centers.append((x, z))
         for _ in range(random.randint(BOAT_CLUSTER_MIN_SIZE, BOAT_CLUSTER_MAX_SIZE)):
             bx, bz = x + random.uniform(-BOAT_CLUSTER_RADIUS, BOAT_CLUSTER_RADIUS), z + random.uniform(-BOAT_CLUSTER_RADIUS, BOAT_CLUSTER_RADIUS)
@@ -256,10 +244,6 @@ def generate_reeds(height_data, hdr, surface_data, max_x, max_z, grid):
         if not is_color(get_surface_color(x, z, surface_data, max_x, max_z), COASTAL_COLOR): 
             continue
 
-        # ADICIONE ESTA LINHA AQUI:
-        if not is_real_island(x, z, height_data, hdr): 
-            continue
-
         clump_size, cx, cz, cc = 0, x, z, 1.0
         while clump_size < REED_CLUMP_MAX_SIZE and random.random() < cc:
             cy = get_altitude(cx, cz, height_data, hdr)
@@ -290,10 +274,6 @@ def generate_stones(height_data, hdr, surface_data, max_x, max_z, grid):
         if not is_color(get_surface_color(x, z, surface_data, max_x, max_z), COASTAL_COLOR): 
             continue
 
-        # ADICIONE ESTA LINHA AQUI:
-        if not is_real_island(x, z, height_data, hdr): 
-            continue
-        
         nv = noise_value(x, z, seed=RANDOM_SEED)
         if nv < STONE_CLUSTER_BIAS and random.random() > (nv / STONE_CLUSTER_BIAS): continue
         if grid.too_close(x, z, MIN_SPACING_SOLID_OBJECTS): continue
@@ -319,10 +299,6 @@ def generate_debris(height_data, hdr, surface_data, max_x, max_z, grid):
         if not is_color(get_surface_color(x, z, surface_data, max_x, max_z), COASTAL_COLOR): 
             continue
 
-        # ADICIONE ESTA LINHA AQUI:
-        if not is_real_island(x, z, height_data, hdr): 
-            continue
-        
         objects.append(MapObject(name=random.choice(DEBRIS_MODELS), x=x, y=y, z=z, yaw=random.uniform(0, 360), pitch=random.uniform(-20, 20), roll=random.uniform(-25, 25), scale=random.uniform(0.8, 1.3), category="debris"))
         grid.add(x, z)
     return objects
@@ -341,9 +317,6 @@ def generate_shrubs(height_data, hdr, surface_data, max_x, max_z, grid):
         if not is_color(get_surface_color(x, z, surface_data, max_x, max_z), COASTAL_COLOR): 
             continue
 
-        # ADICIONE ESTA LINHA AQUI:
-        if not is_real_island(x, z, height_data, hdr): 
-            continue
         if not (is_color(c, COASTAL_COLOR) or is_color(c, VEGETATION_COLOR) or is_color(c, DIRT_BUFFER_COLOR)) or grid.too_close(x, z, SHRUB_MIN_SPACING): continue
         objects.append(MapObject(name=random.choice(SHRUB_MODELS), x=x, y=y, z=z, yaw=random.uniform(0, 360), scale=random.uniform(0.7, 1.2), category="shrub"))
         grid.add(x, z)
@@ -374,14 +347,26 @@ def export_by_category(objects: List[MapObject], base_path: str, hdr: MapHeader)
 #  MAIN
 # ==============================================================================
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate Noronha coastal placement exports.")
+    parser.add_argument("--heightmap", type=Path, required=True, help="ASCII grid heightmap (.asc).")
+    parser.add_argument("--surfacemap", type=Path, required=True, help="Surface mask image.")
+    parser.add_argument("--output", type=Path, required=True, help="Output path prefix, without category suffix.")
+    return parser.parse_args()
+
+
 def main():
-    os.makedirs(os.path.dirname(OUTPUT_PATH_BASE), exist_ok=True)
+    args = parse_args()
+    for label, path in (("heightmap", args.heightmap), ("surfacemap", args.surfacemap)):
+        if not path.is_file():
+            raise FileNotFoundError(f"{label} not found: {path}")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     setup_logging()
     random.seed(RANDOM_SEED)
     np.random.seed(RANDOM_SEED)
 
-    height_data, hdr = load_heightmap(HEIGHTMAP_PATH)
-    surface_data = load_surfacemap(SURFACEMAP_PATH)
+    height_data, hdr = load_heightmap(args.heightmap)
+    surface_data = load_surfacemap(args.surfacemap)
     max_x, max_z = hdr.ncols * hdr.cellsize, hdr.nrows * hdr.cellsize
     grid = PlacementGrid(cell_size=MIN_SPACING_SOLID_OBJECTS * 2, max_x=max_x, max_z=max_z)
 
@@ -393,9 +378,10 @@ def main():
         generate_shrubs(height_data, hdr, surface_data, max_x, max_z, grid)
     )
     
-    export_terrain_builder(all_objects, f"{OUTPUT_PATH_BASE}_all_tb.txt", hdr)
-    export_dayz_editor(all_objects,     f"{OUTPUT_PATH_BASE}_editor.json")
-    export_by_category(all_objects,      OUTPUT_PATH_BASE, hdr)
+    output_base = str(args.output)
+    export_terrain_builder(all_objects, f"{output_base}_all_tb.txt", hdr)
+    export_dayz_editor(all_objects,     f"{output_base}_editor.json")
+    export_by_category(all_objects,      output_base, hdr)
     log.info("\nConcluido e alinhado ao GPS!")
 
 if __name__ == "__main__":

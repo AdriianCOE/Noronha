@@ -22,6 +22,17 @@
 
 </div>
 
+---
+
+## Desenvolvimento
+
+Este é o repositório oficial do mapa: world, CE exportada, navmesh, sons, configurações e artefatos runtime necessários para o PBO. O addon de itens é independente em [Noronha_Items](https://github.com/AdriianCOE/Noronha_Items) e é uma dependência do CE.
+
+- Mapa Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894>
+- Noronha Items Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3698170839>
+
+A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE, terreno, build, desenvolvimento e responsabilidades entre repositórios. O WRP atual não foi localizado no inventário de agosto de 2026; ele não é inventado nem substituído por outro arquivo neste repositório.
+
 <br/>
 
 ---

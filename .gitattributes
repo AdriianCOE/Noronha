@@ -1,0 +1,4 @@
+# Large runtime artifacts that are intentionally part of the official map state.
+data/layers/*.paa filter=lfs diff=lfs merge=lfs -text
+data/layers/*.rvmat -text whitespace=-trailing-space
+navmesh/*.nm filter=lfs diff=lfs merge=lfs -text
