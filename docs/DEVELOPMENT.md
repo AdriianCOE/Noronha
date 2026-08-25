@@ -2,6 +2,8 @@
 
 Use branches de reorganização e commits estreitos. Revise conteúdo normalizado para CRLF/LF antes de concluir que dois arquivos divergem. Nunca remova uma fonte única só porque parece cache.
 
+O fluxo DEV/TEST/LIVE e a convenção de branches estão em [RELEASE_WORKFLOW.md](RELEASE_WORKFLOW.md). Builds locais pertencem a `P:\Noronha_Builds`, nunca ao checkout de source.
+
 Para placement costeiro:
 
 ```powershell
