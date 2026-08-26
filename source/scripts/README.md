@@ -53,6 +53,15 @@ Override the deterministic seed for an experiment:
 python coastal_placement.py ... --seed 20260825
 ```
 
+Validate the exact inputs and selected profile without generating objects:
+
+```powershell
+python coastal_placement.py --heightmap "<heightmap.asc>" --surfacemap "<surface-mask.png>" --validate-only --manifest "<report.json>"
+```
+
+`stones` requires the `noise` package during an actual generation. The tool
+fails clearly when it is absent instead of switching algorithms silently.
+
 Each generator receives its own stable RNG stream derived from the seed and
 category name. The command normalizes category execution to the documented
 order, so `--categories shrubs,stones` and `--categories stones,shrubs` do not
@@ -78,7 +87,7 @@ Future profiles can be added without replacing the current one. Prefer a new pro
 From this directory:
 
 ```powershell
-python -m unittest test_coastal_placement.py test_audit_surfaces.py
+python -m unittest discover -p "test_*.py"
 ```
 
 The tests cover surface matching, non-square surface-map coordinates, spacing, coast detection, and profile validation.
