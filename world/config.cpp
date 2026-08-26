@@ -65,7 +65,6 @@ class CfgWorlds
         // ---------------------------------------------------------
         // INFORMACOES BASICAS
         // ---------------------------------------------------------
-        access=3;
         worldId=3000;
         description="Noronha";
         worldName="Noronha\world\Noronha.wrp";

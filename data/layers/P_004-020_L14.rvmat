@@ -6,12 +6,12 @@ specular[]={0,0,0,0};
 specularPower=0;
 class Stage0
 {
-	texture="noronha\data\layers\S_004_020_lco.png";
+	texture="noronha\data\layers\s_004_020_lco.png";
 	texGen=3;
 };
 class Stage1
 {
-	texture="noronha\data\layers\M_004_020_lco.png";
+	texture="noronha\data\layers\m_004_020_lco.png";
 	texGen=4;
 };
 class TexGen3
