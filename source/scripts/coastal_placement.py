@@ -5,6 +5,7 @@
 # ================================================================================
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import logging
@@ -30,6 +31,8 @@ except ImportError:
 LOG_LEVEL = logging.INFO
 DEFAULT_PROFILE_FILE = Path(__file__).with_name("placement_profiles.json")
 DEFAULT_PROFILE_NAME = "noronha_coast_v1"
+PROFILE_SCHEMA_VERSION = 1
+GENERATOR_VERSION = 3
 
 log = logging.getLogger(__name__)
 
@@ -112,6 +115,11 @@ def load_profile(path: Path, profile_name: str) -> Mapping:
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
 
+    if payload.get("schema_version") != PROFILE_SCHEMA_VERSION:
+        raise ValueError(
+            f"Unsupported profile schema in {path}; expected {PROFILE_SCHEMA_VERSION}"
+        )
+
     profiles = payload.get("profiles")
     if not isinstance(profiles, dict) or not profiles:
         raise ValueError(f"No profiles found in {path}")
@@ -153,12 +161,27 @@ def validate_profile(profile_name: str, profile: Mapping) -> None:
         )
 
     for category_name, category in categories.items():
+        if not isinstance(category, Mapping):
+            raise ValueError(f"Profile '{profile_name}' category '{category_name}' must be an object")
+        models = category.get("models", [])
+        if not isinstance(models, list) or not all(isinstance(model, str) and model for model in models):
+            raise ValueError(f"Profile '{profile_name}' category '{category_name}' needs a valid model pool")
+        if not models:
+            raise ValueError(f"Profile '{profile_name}' category '{category_name}' needs a non-empty model pool")
         for surface_name in category.get("surfaces", []):
             if surface_name not in surfaces:
                 raise ValueError(
                     f"Profile '{profile_name}' category '{category_name}' "
                     f"references unknown surface '{surface_name}'"
                 )
+        for minimum, maximum in (("min_height", "max_height"), ("min_spacing", "max_spacing")):
+            if minimum in category and maximum in category and category[minimum] > category[maximum]:
+                raise ValueError(f"Profile '{profile_name}' category '{category_name}' has {minimum} greater than {maximum}")
+        for key in ("target", "attempts", "oversample", "max_attempts_per_object", "max_attempts_per_cluster"):
+            if key in category and (not isinstance(category[key], int) or category[key] <= 0):
+                raise ValueError(f"Profile '{profile_name}' category '{category_name}' has invalid {key}")
+        if "max_slope" in category and not 0 <= category["max_slope"] <= 90:
+            raise ValueError(f"Profile '{profile_name}' category '{category_name}' has invalid max_slope")
 
     biomes = profile.get("biomes", {})
     if not isinstance(biomes, Mapping):
@@ -957,13 +980,17 @@ def export_stats(
     output_hashes: Mapping[str, str] | None = None,
 ) -> None:
     payload = {
-        "generator_version": 2,
+        "generator_version": GENERATOR_VERSION,
+        "generation_utc": datetime.now(timezone.utc).isoformat(),
         "profile": profile_name,
         "seed": seed,
         "categories": list(categories),
         "object_count": object_count,
         "input_sha256": dict(input_hashes),
         "output_sha256": dict(output_hashes or {}),
+        "noise_backend": "noise.pnoise2" if NOISE_AVAILABLE else "unavailable",
+        "noise_fallback_used": False,
+        "python_version": sys.version.split()[0],
         "stats": stats.as_dict(),
     }
     with path.open("w", encoding="utf-8", newline="\n") as handle:
@@ -1005,7 +1032,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        required=True,
+        required=False,
         help="Output path prefix, without category suffix.",
     )
     parser.add_argument(
@@ -1034,6 +1061,22 @@ def parse_args() -> argparse.Namespace:
         help="Generate and report statistics without writing placement exports.",
     )
     parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate inputs and profile without generating placement objects.",
+    )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=None,
+        help="Write the reproducibility manifest to this path.",
+    )
+    parser.add_argument(
+        "--json-report",
+        action="store_true",
+        help="Print the manifest JSON to stdout.",
+    )
+    parser.add_argument(
         "--stats",
         type=Path,
         default=None,
@@ -1060,6 +1103,37 @@ def main() -> None:
     profile = load_profile(args.profiles, args.profile)
     global_cfg = profile["global"]
     seed = args.seed if args.seed is not None else int(global_cfg["random_seed"])
+    selected_categories = [name for name in GENERATORS if name in args.categories]
+    input_hashes = {
+        "heightmap": file_sha256(args.heightmap),
+        "surfacemap": file_sha256(args.surfacemap),
+        "profiles": file_sha256(args.profiles),
+    }
+
+    if args.validate_only:
+        manifest = {
+            "generator_version": GENERATOR_VERSION,
+            "profile": args.profile,
+            "seed": seed,
+            "categories": selected_categories,
+            "input_sha256": input_hashes,
+            "noise_backend": "noise.pnoise2" if NOISE_AVAILABLE else "unavailable",
+            "validated_only": True,
+        }
+        if args.manifest:
+            args.manifest.parent.mkdir(parents=True, exist_ok=True)
+            args.manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        if args.json_report:
+            print(json.dumps(manifest, indent=2))
+        log.info("Validation complete; no placement data was generated.")
+        return
+    if "stones" in selected_categories and not NOISE_AVAILABLE:
+        raise RuntimeError(
+            "The selected profile requires Perlin noise for stones, but the 'noise' package is unavailable. "
+            "Install requirements.txt; no fallback placement is generated."
+        )
+    if args.output is None:
+        raise ValueError("--output is required unless --validate-only is used")
 
     height_data, header = load_heightmap(
         args.heightmap, float(global_cfg["sea_level"])
@@ -1072,7 +1146,6 @@ def main() -> None:
     stats = PlacementStats()
     all_objects: List[MapObject] = []
 
-    selected_categories = [name for name in GENERATORS if name in args.categories]
     for category_name in selected_categories:
         generator = GENERATORS[category_name]
         rng = category_rng(seed, category_name)
@@ -1112,20 +1185,17 @@ def main() -> None:
     )
 
     if args.dry_run:
-        if args.stats:
-            args.stats.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path = args.manifest or args.stats
+        if manifest_path:
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
             export_stats(
                 stats=stats,
-                path=args.stats,
+                path=manifest_path,
                 profile_name=args.profile,
                 seed=seed,
                 object_count=len(all_objects),
                 categories=selected_categories,
-                input_hashes={
-                    "heightmap": file_sha256(args.heightmap),
-                    "surfacemap": file_sha256(args.surfacemap),
-                    "profiles": file_sha256(args.profiles),
-                },
+                input_hashes=input_hashes,
             )
         log.info("Dry run complete; placement exports were not written.")
         return
@@ -1136,7 +1206,7 @@ def main() -> None:
     export_dayz_editor(all_objects, Path(f"{output_base}_editor.json"))
     export_by_category(all_objects, output_base, header)
 
-    stats_path = args.stats or Path(f"{output_base}_stats.json")
+    stats_path = args.manifest or args.stats or Path(f"{output_base}_stats.json")
     stats_path.parent.mkdir(parents=True, exist_ok=True)
     output_files = sorted(args.output.parent.glob(f"{args.output.name}_*"))
     export_stats(
@@ -1146,13 +1216,11 @@ def main() -> None:
         seed=seed,
         object_count=len(all_objects),
         categories=selected_categories,
-        input_hashes={
-            "heightmap": file_sha256(args.heightmap),
-            "surfacemap": file_sha256(args.surfacemap),
-            "profiles": file_sha256(args.profiles),
-        },
+        input_hashes=input_hashes,
         output_hashes={path.name: file_sha256(path) for path in output_files if path.is_file()},
     )
+    if args.json_report:
+        print(stats_path.read_text(encoding="utf-8"))
     log.info("Completed exports aligned to the map origin.")
 
 

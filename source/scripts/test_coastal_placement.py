@@ -78,7 +78,7 @@ class PlacementCoreTests(unittest.TestCase):
             "surfaces": {"coastal": [1, 2, 3]},
             "biomes": {"beach": {"surfaces": ["missing"]}},
             "categories": {
-                name: {"surfaces": ["coastal"]}
+                name: {"surfaces": ["coastal"], "models": ["test"]}
                 for name in ("boats", "reeds", "stones", "debris", "shrubs")
             },
         }
@@ -87,16 +87,17 @@ class PlacementCoreTests(unittest.TestCase):
 
     def test_load_profile_reads_selected_profile(self):
         payload = {
+            "schema_version": 1,
             "profiles": {
                 "test": {
                     "global": {},
                     "surfaces": {"coastal": [1, 2, 3]},
                     "categories": {
-                        "boats": {"surfaces": ["coastal"]},
-                        "reeds": {"surfaces": ["coastal"]},
-                        "stones": {"surfaces": ["coastal"]},
-                        "debris": {"surfaces": ["coastal"]},
-                        "shrubs": {"surfaces": ["coastal"]},
+                        "boats": {"surfaces": ["coastal"], "models": ["test"]},
+                        "reeds": {"surfaces": ["coastal"], "models": ["test"]},
+                        "stones": {"surfaces": ["coastal"], "models": ["test"]},
+                        "debris": {"surfaces": ["coastal"], "models": ["test"]},
+                        "shrubs": {"surfaces": ["coastal"], "models": ["test"]},
                     },
                 }
             }
