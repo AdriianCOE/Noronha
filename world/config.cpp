@@ -11,6 +11,7 @@ class CfgPatches
     {
         units[]={};
         weapons[]={};
+        worlds[]={"Noronha"};
         requiredVersion=0.1;
         requiredAddons[]={
             "DZ_Data",

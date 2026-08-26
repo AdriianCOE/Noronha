@@ -37,6 +37,10 @@ class IDs, coordenadas, tipos e raios atuais. O `world/config.cpp` agora o
 inclui diretamente; `CfgConvert -test` validou o include relativo, padrão também
 usado pelo source local de Nyheim para partes de configuração do mundo.
 
+O `CfgPatches` declara explicitamente `worlds[]={"Noronha"}`. Isto mantém os
+metadados do addon alinhados ao `CfgWorldList`, sem alterar a geometria nem a
+seleção de mundo em runtime.
+
 ### Ambiência runtime conservadora
 
 | Área | Antes | Depois | Estado |
