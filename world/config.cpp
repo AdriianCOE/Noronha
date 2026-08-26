@@ -89,8 +89,8 @@ class CfgWorlds
         latitude=-3.84;
         longitude=-32.42;
 
-        mapDisplayNameKey="Guia Turistico de Noronha";
-        mapDescriptionKey="Um desdobravel colorido prometendo 'as ferias mais inesqueciveis da sua vida'. Mostra trilhas, praias paradisiacas e pontos de mergulho. Hoje, e a unica coisa que te impede de se perder na selva.";
+        mapDisplayNameKey="Guia de Noronha";
+        mapDescriptionKey="Um guia turistico antigo da ilha. Praias, trilhas e mirantes ainda estao marcados, mas muita coisa mudou desde que foi impresso.";
         mapTextureClosed="dz\gear\navigation\data\map_enoch_co.paa";
 		mapTextureOpened="dz\structures_bliss\signs\tourist\data\karta_enoch_co.paa";
 		mapTextureLegend="dz\structures_bliss\signs\tourist\data\karta_enoch_side_co.paa";
