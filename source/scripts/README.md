@@ -24,7 +24,7 @@ The command writes:
 - `<output>_all_tb.txt`
 - `<output>_editor.json`
 - `<output>_<category>_tb.txt`
-- `<output>_stats.json`
+- `<output>_stats.json` (generator version, seed, input hashes and output hashes)
 
 Nothing is imported into Terrain Builder automatically.
 
@@ -53,6 +53,12 @@ Override the deterministic seed for an experiment:
 python coastal_placement.py ... --seed 20260825
 ```
 
+Each generator receives its own stable RNG stream derived from the seed and
+category name. The command normalizes category execution to the documented
+order, so `--categories shrubs,stones` and `--categories stones,shrubs` do not
+silently produce different results. Shared spacing still means a subset run is
+an intentional alternative export, not a replacement for a full generation.
+
 ## Profiles
 
 `placement_profiles.json` is the source of placement behavior. The initial `noronha_coast_v1` profile preserves the existing model pools while removing the old duplicated coastal checks that unintentionally forced reeds, stones, and shrubs back onto the coastal color.
@@ -72,7 +78,7 @@ Future profiles can be added without replacing the current one. Prefer a new pro
 From this directory:
 
 ```powershell
-python -m unittest test_coastal_placement.py
+python -m unittest test_coastal_placement.py test_audit_surfaces.py
 ```
 
 The tests cover surface matching, non-square surface-map coordinates, spacing, coast detection, and profile validation.

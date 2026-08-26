@@ -5,6 +5,7 @@
 # ================================================================================
 
 import argparse
+import hashlib
 import json
 import logging
 import math
@@ -300,9 +301,9 @@ def matches_any_surface(
     return any(is_color(pixel, target, tolerance) for target in allowed_colors)
 
 
-def slope_to_pitch_roll(slope_deg: float) -> Tuple[float, float]:
+def slope_to_pitch_roll(slope_deg: float, rng: random.Random) -> Tuple[float, float]:
     jitter = slope_deg * 0.3
-    return random.uniform(-jitter, jitter), random.uniform(-jitter, jitter)
+    return rng.uniform(-jitter, jitter), rng.uniform(-jitter, jitter)
 
 
 def is_real_coast(
@@ -355,9 +356,11 @@ class PlacementGrid:
         self.grid.setdefault(self._key(x, z), []).append((x, z))
 
 
-def noise_value(x: float, z: float, category: Mapping, seed: int) -> float:
+def noise_value(
+    x: float, z: float, category: Mapping, seed: int, rng: random.Random
+) -> float:
     if not NOISE_AVAILABLE:
-        return random.random()
+        return rng.random()
 
     noise_cfg = category["noise"]
     return (
@@ -378,12 +381,26 @@ def noise_value(x: float, z: float, category: Mapping, seed: int) -> float:
 
 
 def random_world_point(
-    margin: float, max_x: float, max_z: float
+    margin: float, max_x: float, max_z: float, rng: random.Random
 ) -> Tuple[float, float]:
     return (
-        random.uniform(margin, max_x - margin),
-        random.uniform(margin, max_z - margin),
+        rng.uniform(margin, max_x - margin),
+        rng.uniform(margin, max_z - margin),
     )
+
+
+def category_rng(seed: int, category_name: str) -> random.Random:
+    """Give each generator a stable stream without touching module-global RNG."""
+    digest = hashlib.sha256(f"{seed}:{category_name}".encode("utf-8")).digest()
+    return random.Random(int.from_bytes(digest[:8], "big"))
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def validate_candidate(
@@ -444,6 +461,7 @@ def generate_boats(
     max_z: float,
     grid: PlacementGrid,
     stats: PlacementStats,
+    rng: random.Random,
 ) -> List[MapObject]:
     category_name = "boats"
     cfg = profile["categories"][category_name]
@@ -459,7 +477,7 @@ def generate_boats(
             break
 
         stats.inc(category_name, "attempts")
-        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z)
+        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z, rng)
         valid, _, _ = validate_candidate(
             category_name=category_name,
             x=x,
@@ -493,21 +511,21 @@ def generate_boats(
         stats.inc(category_name, "accepted_clusters")
 
         for _ in range(
-            random.randint(cfg["cluster_min_size"], cfg["cluster_max_size"])
+            rng.randint(cfg["cluster_min_size"], cfg["cluster_max_size"])
         ):
-            boat_x = x + random.uniform(-cfg["cluster_radius"], cfg["cluster_radius"])
-            boat_z = z + random.uniform(-cfg["cluster_radius"], cfg["cluster_radius"])
+            boat_x = x + rng.uniform(-cfg["cluster_radius"], cfg["cluster_radius"])
+            boat_z = z + rng.uniform(-cfg["cluster_radius"], cfg["cluster_radius"])
             if grid.too_close(boat_x, boat_z, global_cfg["solid_spacing"]):
                 stats.inc(category_name, "rejected_object_spacing")
                 continue
 
             boat_y = get_altitude(boat_x, boat_z, height_data, header)
             boat_slope = get_slope(boat_x, boat_z, height_data, header)
-            pitch, roll = slope_to_pitch_roll(boat_slope)
-            model = random.choice(cfg["models"])
+            pitch, roll = slope_to_pitch_roll(boat_slope, rng)
+            model = rng.choice(cfg["models"])
             if "Wreck" in model:
-                roll = random.uniform(-25, 25)
-                pitch = random.uniform(-10, 10)
+                roll = rng.uniform(-25, 25)
+                pitch = rng.uniform(-10, 10)
 
             objects.append(
                 MapObject(
@@ -515,31 +533,31 @@ def generate_boats(
                     x=boat_x,
                     y=boat_y,
                     z=boat_z,
-                    yaw=random.uniform(0, 360),
+                    yaw=rng.uniform(0, 360),
                     pitch=pitch,
                     roll=roll,
-                    scale=random.uniform(*cfg["scale"]),
+                    scale=rng.uniform(*cfg["scale"]),
                     category="boat",
                 )
             )
             grid.add(boat_x, boat_z)
             stats.placed(category_name)
 
-            if cfg.get("gear_models") and random.random() < cfg["gear_chance"]:
-                gear_x = boat_x + random.uniform(-3, 3)
-                gear_z = boat_z + random.uniform(-3, 3)
+            if cfg.get("gear_models") and rng.random() < cfg["gear_chance"]:
+                gear_x = boat_x + rng.uniform(-3, 3)
+                gear_z = boat_z + rng.uniform(-3, 3)
                 if grid.too_close(gear_x, gear_z, cfg["gear_min_spacing"]):
                     stats.inc(category_name, "rejected_gear_spacing")
                     continue
 
                 objects.append(
                     MapObject(
-                        name=random.choice(cfg["gear_models"]),
+                        name=rng.choice(cfg["gear_models"]),
                         x=gear_x,
                         y=get_altitude(gear_x, gear_z, height_data, header),
                         z=gear_z,
-                        yaw=random.uniform(0, 360),
-                        scale=random.uniform(*cfg["gear_scale"]),
+                        yaw=rng.uniform(0, 360),
+                        scale=rng.uniform(*cfg["gear_scale"]),
                         category="boat",
                     )
                 )
@@ -558,6 +576,7 @@ def generate_reeds(
     max_z: float,
     grid: PlacementGrid,
     stats: PlacementStats,
+    rng: random.Random,
 ) -> List[MapObject]:
     category_name = "reeds"
     cfg = profile["categories"][category_name]
@@ -568,7 +587,7 @@ def generate_reeds(
     log.info("Generating reeds...")
     for _ in range(cfg["attempts"]):
         stats.inc(category_name, "attempts")
-        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z)
+        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z, rng)
         valid, _, _ = validate_candidate(
             category_name=category_name,
             x=x,
@@ -591,7 +610,7 @@ def generate_reeds(
         if not valid:
             continue
 
-        if random.random() > cfg["clump_chance"]:
+        if rng.random() > cfg["clump_chance"]:
             stats.inc(category_name, "rejected_probability")
             continue
         if grid.too_close(x, z, cfg["min_spacing"]):
@@ -603,7 +622,7 @@ def generate_reeds(
         continue_chance = 1.0
         while (
             clump_size < cfg["clump_max_size"]
-            and random.random() < continue_chance
+            and rng.random() < continue_chance
         ):
             current_y = get_altitude(current_x, current_z, height_data, header)
             current_surface = get_surface_color(
@@ -618,12 +637,12 @@ def generate_reeds(
             ):
                 objects.append(
                     MapObject(
-                        name=random.choice(cfg["models"]),
+                        name=rng.choice(cfg["models"]),
                         x=current_x,
                         y=current_y,
                         z=current_z,
-                        yaw=random.uniform(0, 360),
-                        scale=random.uniform(*cfg["scale"]),
+                        yaw=rng.uniform(0, 360),
+                        scale=rng.uniform(*cfg["scale"]),
                         category="reed",
                     )
                 )
@@ -631,8 +650,8 @@ def generate_reeds(
                 stats.placed(category_name)
                 clump_size += 1
 
-            angle = random.uniform(0, 2 * math.pi)
-            step = random.uniform(cfg["min_spacing"], cfg["max_spacing"])
+            angle = rng.uniform(0, 2 * math.pi)
+            step = rng.uniform(cfg["min_spacing"], cfg["max_spacing"])
             current_x = max(
                 0, min(max_x, current_x + step * math.cos(angle))
             )
@@ -654,6 +673,7 @@ def generate_stones(
     grid: PlacementGrid,
     stats: PlacementStats,
     seed: int,
+    rng: random.Random,
 ) -> List[MapObject]:
     category_name = "stones"
     cfg = profile["categories"][category_name]
@@ -667,7 +687,7 @@ def generate_stones(
             break
 
         stats.inc(category_name, "attempts")
-        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z)
+        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z, rng)
         valid, y, slope = validate_candidate(
             category_name=category_name,
             x=x,
@@ -695,9 +715,9 @@ def generate_stones(
             stats.inc(category_name, "rejected_altitude_band")
             continue
 
-        noise = noise_value(x, z, cfg, seed)
+        noise = noise_value(x, z, cfg, seed, rng)
         cluster_bias = cfg["cluster_bias"]
-        if noise < cluster_bias and random.random() > (noise / cluster_bias):
+        if noise < cluster_bias and rng.random() > (noise / cluster_bias):
             stats.inc(category_name, "rejected_noise")
             continue
 
@@ -705,17 +725,17 @@ def generate_stones(
             stats.inc(category_name, "rejected_spacing")
             continue
 
-        pitch, roll = slope_to_pitch_roll(slope)
+        pitch, roll = slope_to_pitch_roll(slope, rng)
         objects.append(
             MapObject(
-                name=random.choice(cfg["models"]),
+                name=rng.choice(cfg["models"]),
                 x=x,
                 y=y,
                 z=z,
-                yaw=random.uniform(0, 360),
+                yaw=rng.uniform(0, 360),
                 pitch=pitch,
                 roll=roll,
-                scale=random.uniform(*cfg["scale"]),
+                scale=rng.uniform(*cfg["scale"]),
                 category="stone",
             )
         )
@@ -734,6 +754,7 @@ def generate_debris(
     max_z: float,
     grid: PlacementGrid,
     stats: PlacementStats,
+    rng: random.Random,
 ) -> List[MapObject]:
     category_name = "debris"
     cfg = profile["categories"][category_name]
@@ -747,7 +768,7 @@ def generate_debris(
             break
 
         stats.inc(category_name, "attempts")
-        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z)
+        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z, rng)
         valid, y, _ = validate_candidate(
             category_name=category_name,
             x=x,
@@ -776,14 +797,14 @@ def generate_debris(
 
         objects.append(
             MapObject(
-                name=random.choice(cfg["models"]),
+                name=rng.choice(cfg["models"]),
                 x=x,
                 y=y,
                 z=z,
-                yaw=random.uniform(0, 360),
-                pitch=random.uniform(*cfg["pitch"]),
-                roll=random.uniform(*cfg["roll"]),
-                scale=random.uniform(*cfg["scale"]),
+                yaw=rng.uniform(0, 360),
+                pitch=rng.uniform(*cfg["pitch"]),
+                roll=rng.uniform(*cfg["roll"]),
+                scale=rng.uniform(*cfg["scale"]),
                 category="debris",
             )
         )
@@ -802,6 +823,7 @@ def generate_shrubs(
     max_z: float,
     grid: PlacementGrid,
     stats: PlacementStats,
+    rng: random.Random,
 ) -> List[MapObject]:
     category_name = "shrubs"
     cfg = profile["categories"][category_name]
@@ -815,7 +837,7 @@ def generate_shrubs(
             break
 
         stats.inc(category_name, "attempts")
-        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z)
+        x, z = random_world_point(global_cfg["map_margin"], max_x, max_z, rng)
         valid, y, _ = validate_candidate(
             category_name=category_name,
             x=x,
@@ -844,12 +866,12 @@ def generate_shrubs(
 
         objects.append(
             MapObject(
-                name=random.choice(cfg["models"]),
+                name=rng.choice(cfg["models"]),
                 x=x,
                 y=y,
                 z=z,
-                yaw=random.uniform(0, 360),
-                scale=random.uniform(*cfg["scale"]),
+                yaw=rng.uniform(0, 360),
+                scale=rng.uniform(*cfg["scale"]),
                 category="shrub",
             )
         )
@@ -931,12 +953,17 @@ def export_stats(
     seed: int,
     object_count: int,
     categories: Sequence[str],
+    input_hashes: Mapping[str, str],
+    output_hashes: Mapping[str, str] | None = None,
 ) -> None:
     payload = {
+        "generator_version": 2,
         "profile": profile_name,
         "seed": seed,
         "categories": list(categories),
         "object_count": object_count,
+        "input_sha256": dict(input_hashes),
+        "output_sha256": dict(output_hashes or {}),
         "stats": stats.as_dict(),
     }
     with path.open("w", encoding="utf-8", newline="\n") as handle:
@@ -1034,9 +1061,6 @@ def main() -> None:
     global_cfg = profile["global"]
     seed = args.seed if args.seed is not None else int(global_cfg["random_seed"])
 
-    random.seed(seed)
-    np.random.seed(seed)
-
     height_data, header = load_heightmap(
         args.heightmap, float(global_cfg["sea_level"])
     )
@@ -1048,8 +1072,10 @@ def main() -> None:
     stats = PlacementStats()
     all_objects: List[MapObject] = []
 
-    for category_name in args.categories:
+    selected_categories = [name for name in GENERATORS if name in args.categories]
+    for category_name in selected_categories:
         generator = GENERATORS[category_name]
+        rng = category_rng(seed, category_name)
         if category_name == "stones":
             generated = generator(
                 profile,
@@ -1061,6 +1087,7 @@ def main() -> None:
                 grid,
                 stats,
                 seed,
+                rng,
             )
         else:
             generated = generator(
@@ -1072,6 +1099,7 @@ def main() -> None:
                 max_z,
                 grid,
                 stats,
+                rng,
             )
         all_objects.extend(generated)
 
@@ -1092,7 +1120,12 @@ def main() -> None:
                 profile_name=args.profile,
                 seed=seed,
                 object_count=len(all_objects),
-                categories=args.categories,
+                categories=selected_categories,
+                input_hashes={
+                    "heightmap": file_sha256(args.heightmap),
+                    "surfacemap": file_sha256(args.surfacemap),
+                    "profiles": file_sha256(args.profiles),
+                },
             )
         log.info("Dry run complete; placement exports were not written.")
         return
@@ -1105,13 +1138,20 @@ def main() -> None:
 
     stats_path = args.stats or Path(f"{output_base}_stats.json")
     stats_path.parent.mkdir(parents=True, exist_ok=True)
+    output_files = sorted(args.output.parent.glob(f"{args.output.name}_*"))
     export_stats(
         stats=stats,
         path=stats_path,
         profile_name=args.profile,
         seed=seed,
         object_count=len(all_objects),
-        categories=args.categories,
+        categories=selected_categories,
+        input_hashes={
+            "heightmap": file_sha256(args.heightmap),
+            "surfacemap": file_sha256(args.surfacemap),
+            "profiles": file_sha256(args.profiles),
+        },
+        output_hashes={path.name: file_sha256(path) for path in output_files if path.is_file()},
     )
     log.info("Completed exports aligned to the map origin.")
 

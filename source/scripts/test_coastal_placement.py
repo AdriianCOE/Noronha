@@ -13,6 +13,13 @@ class PlacementCoreTests(unittest.TestCase):
         self.assertTrue(cp.matches_any_surface((100, 100, 100), [(105, 100, 100)], 6))
         self.assertFalse(cp.matches_any_surface((100, 100, 100), [(110, 100, 100)], 6))
 
+    def test_category_rng_is_stable_and_separate(self):
+        first = cp.category_rng(42, "boats")
+        second = cp.category_rng(42, "boats")
+        other = cp.category_rng(42, "stones")
+        self.assertEqual([first.random() for _ in range(3)], [second.random() for _ in range(3)])
+        self.assertNotEqual(first.random(), other.random())
+
     def test_world_to_surface_supports_non_square_inputs(self):
         shape = (100, 200, 3)
         row, col = cp.world_to_surface(500.0, 250.0, shape, 1000.0, 500.0)
