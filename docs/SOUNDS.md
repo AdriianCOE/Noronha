@@ -42,4 +42,10 @@ somente `CfgPatches/Noronha_Sounds`, com dependência `DZ_Data`; não há
 
 O path virtual final permanece `Noronha\sounds\...`, sem alteração das
 referências corretas do world. Esta preparação não gerou PBO, não prova o
-empacotamento runtime e não substitui o build manual futuro em PBO Project.
+empacotamento runtime e não substitui o build manual futuro com RaG DayZ Tools.
+
+## Ambiente vanilla
+
+`OceanWaves` usa `dz\sounds\environment\ambients\coast`, um asset vanilla
+localmente disponível, em vez do loop `river_close_loop`. A mistura permanece
+restrita a `sea`; aves e cigarras continuam suprimidas por noite e chuva.

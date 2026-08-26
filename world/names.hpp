@@ -53,7 +53,7 @@ class Names
     class Mirante_Forte_Boldro { name="Forte Boldro"; position[]={5535.67,6924.67}; type="ViewPoint"; radiusA=62.66;  radiusB=48.22;  angle=0; };
     class Ponta_Air_France     { name="Air France";    position[]={9157.75,8674.32}; type="ViewPoint"; radiusA=152.98; radiusB=117.72; angle=0; };
     class Pontinha             { name="Pontinha";      position[]={9684.66,6438.10}; type="ViewPoint"; radiusA=239.04; radiusB=183.94; angle=0; };
-    class Ponta_Sapata         { name="Sapata";        position[]={983.61,3734.55};  type="ViewPoint"; radiusA=239.04; radiusB=183.94; angle=0; };
+    class Ponta_Sapata         { name="Sapata";        position[]={983.61, 3734.55}; type="ViewPoint"; radiusA=239.04; radiusB=183.94; angle=0; };
     class Buraco_Raquel        { name="Raquel";        position[]={9229.12,8436.44}; type="ViewPoint"; radiusA=80.00;  radiusB=80.00;  angle=0; };
 
     // Cultura
