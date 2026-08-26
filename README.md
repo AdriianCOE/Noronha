@@ -1,8 +1,8 @@
 <div align="center">
 
-#   Fernando de Noronha — DayZ Map Mod
+# Fernando de Noronha — DayZ Map Mod
 
-*Uma recriação de sobrevivência tropical do arquipélago brasileiro para o universo de DayZ.*
+*Sobrevivência tropical brasileira inspirada no arquipélago de Fernando de Noronha.*
 
 <br/>
 
@@ -18,7 +18,7 @@
 
 <br/><br/>
 
-`  WORK IN PROGRESS  `
+` WORK IN PROGRESS `
 
 </div>
 
@@ -26,36 +26,53 @@
 
 ## Desenvolvimento
 
-Este é o repositório oficial do mapa: world, CE exportada, navmesh, sons, configurações e artefatos runtime necessários para o PBO. O addon de itens é independente em [Noronha_Items](https://github.com/AdriianCOE/Noronha_Items) e é uma dependência do CE.
+Este é o repositório oficial do mapa: world, CE exportada, navmesh, sons,
+configurações e artefatos runtime necessários para os PBOs. O addon de itens é
+independente em [Noronha_Items](https://github.com/AdriianCOE/Noronha_Items) e é
+uma dependência do CE.
 
 - Mapa Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894>
 - Noronha Items Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3698170839>
 
-A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE, terreno, build, desenvolvimento, responsabilidades entre repositórios e [auditoria de organização](docs/CODE_ORGANIZATION_AUDIT.md). O WRP DEV atual foi exportado em 25/08/2026 a partir da fonte de terreno confirmada pelo autor, validado em runtime manual e rastreado por Git LFS como `DEV_AUTHORITATIVE_RUNTIME`. Consulte [`docs/TERRAIN.md`](docs/TERRAIN.md) para a identidade, proveniência e limites dessa classificação.
-
-<br/>
-
----
-
-##   Sobre o projeto
-
-**Fernando de Noronha** é um mapa custom em desenvolvimento para **DayZ**, inspirado no ilhas brasileiro de mesmo nome. 
-
-O objetivo do projeto é criar um mapa de sobrevivência com identidade brasileira, misturando a tensão característica do jogo com:
-*   Ambientação tropical imersiva
-*   Loot personalizado
-*   Exploração em um território realístico
-
-> **Aviso:** O mapa ainda está em desenvolvimento nem perto de pronto. Isso significa que terreno, sistema de loot, vegetação, construções, áreas jogáveis e balanceamento geral passarão por mudanças e melhorias frequentes. (porém jogável)
+A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE,
+terreno, build, desenvolvimento, responsabilidades entre repositórios e
+auditorias. O WRP DEV validado é rastreado por Git LFS; consulte
+[`docs/TERRAIN.md`](docs/TERRAIN.md) para identidade, proveniência e limites do
+baseline.
 
 ---
 
-##  Área jogável
+## Sobre o projeto
 
-O mapa busca recriar as ilhas de Fernando de Noronha em escala **1:1**, oferecendo um cenário detalhado e imersivo. A área totaliza aproximadamente:
+**Noronha** é um mapa custom para **DayZ** fortemente inspirado em Fernando de
+Noronha, mas desenhado primeiro como um mapa de sobrevivência. A geografia,
+nomes, praias, relevo e identidade brasileira servem como referência; distâncias,
+densidade, construções, vegetação e pontos de interesse podem ser simplificados
+ou adaptados quando isso melhora navegação, atmosfera e gameplay.
 
-<div align="center">
-  <br/>
-  <code> 26 km² de área terrestre jogável </code>
-  <br/>
-</div>
+A meta não é reproduzir o arquipélago real metro por metro. O objetivo é fazer o
+jogador reconhecer a inspiração em Noronha enquanto o mapa continua plausível,
+legível e interessante dentro das limitações e sistemas de DayZ.
+
+O projeto busca combinar:
+
+- ambientação tropical oceânica;
+- identidade brasileira sem depender de caricaturas;
+- exploração costeira, urbana e de áreas isoladas;
+- loot e objetos personalizados quando acrescentarem valor;
+- clima, som e vegetação próprios do mapa;
+- sobrevivência difícil e progressão pensada para uma ilha.
+
+> **Aviso:** o mapa está em desenvolvimento e ainda longe da versão final.
+> Terreno, loot, vegetação, construções, áreas jogáveis, ambientação e
+> balanceamento continuarão recebendo mudanças. O estado atual é jogável, não
+> uma representação definitiva da direção artística.
+
+---
+
+## Escala e área jogável
+
+O projeto usa uma área de mundo de **10,24 km × 10,24 km** e mantém a forma geral
+e vários marcos reconhecíveis de Fernando de Noronha. A escala percebida e o
+conteúdo jogável, porém, são adaptados ao DayZ; o projeto não assume fidelidade
+1:1 como requisito de design.
