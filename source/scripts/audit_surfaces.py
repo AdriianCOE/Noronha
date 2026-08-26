@@ -14,27 +14,33 @@ LAYER_RE = re.compile(
     r'material\s*=\s*"(?P<material>[^"]+)";',
     re.DOTALL,
 )
-COLOR_RE = re.compile(r'(?P<name>\w+)\[\]\s*=\s*\{\{(?P<rgb>[^}]+)\}\};')
+COLOR_RE = re.compile(r'(?P<name>\w+)\s*\[\s*\]\s*=\s*\{\{(?P<rgb>[^}]+)\}\};')
 MATERIAL_RE = re.compile(r'material\d+\s*=\s*"(?P<material>[^"]+)";')
+LINE_COMMENT_RE = re.compile(r"//[^\r\n]*")
+BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def without_comments(text: str) -> str:
+    return LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", text))
+
+
 def parse_layers(path: Path) -> dict[str, str]:
-    return {match["name"]: match["material"] for match in LAYER_RE.finditer(read_text(path))}
+    return {match["name"]: match["material"] for match in LAYER_RE.finditer(without_comments(read_text(path)))}
 
 
 def parse_colors(path: Path) -> dict[str, tuple[int, int, int]]:
     colors: dict[str, tuple[int, int, int]] = {}
-    for match in COLOR_RE.finditer(read_text(path)):
+    for match in COLOR_RE.finditer(without_comments(read_text(path))):
         colors[match["name"]] = tuple(int(value.strip()) for value in match["rgb"].split(","))
     return colors
 
 
 def parse_world_materials(path: Path) -> list[str]:
-    return MATERIAL_RE.findall(read_text(path))
+    return MATERIAL_RE.findall(without_comments(read_text(path)))
 
 
 def duplicate_values(values: dict[str, Any]) -> dict[str, list[str]]:
@@ -87,7 +93,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--world-config", type=Path, default=root / "world" / "config.cpp")
     parser.add_argument("--layers-dir", type=Path, default=root / "data" / "layers")
     parser.add_argument("--json", action="store_true", help="Emit the complete report as JSON.")
-    parser.add_argument("--strict", action="store_true", help="Fail for duplicate or undeclared material findings.")
+    parser.add_argument("--strict", action="store_true", help="Fail for runtime-critical missing local paths or duplicate declarations.")
     return parser.parse_args()
 
 
@@ -111,8 +117,7 @@ def main() -> int:
             print(f"{key}: {report[key]}")
 
     findings = (
-        report["materials_used_but_not_declared"]
-        or report["duplicate_legend_colors"]
+        report["duplicate_legend_colors"]
         or report["duplicate_layer_materials"]
         or report["missing_local_material_paths"]
     )

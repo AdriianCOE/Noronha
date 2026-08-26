@@ -6,6 +6,18 @@ import audit_surfaces as audit
 
 
 class SurfaceAuditTests(unittest.TestCase):
+    def test_parsers_ignore_comments_and_accept_crlf_whitespace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "layers.cfg"
+            path.write_text(
+                "// class hidden { texture=\"x\"; material=\"bad\"; };\r\n"
+                "class cp_grass\r\n{ texture = \"x\"; /* ignore */ material = \"DZ\\grass.rvmat\"; };\r\n"
+                "class Colors { cp_grass [] = {{ 1, 2, 3 }}; };\r\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit.parse_layers(path), {"cp_grass": "DZ\\grass.rvmat"})
+            self.assertEqual(audit.parse_colors(path), {"cp_grass": (1, 2, 3)})
+
     def test_build_report_finds_undeclared_material_and_duplicate_color(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
