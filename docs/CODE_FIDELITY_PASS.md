@@ -20,12 +20,21 @@ Noronha ao gameplay de DayZ.
 `source/scripts/coastal_placement.py` foi convertido em ferramenta configurável e
 determinística. Parâmetros e model pools ficam em
 `source/scripts/placement_profiles.json`; o script oferece seleção de categorias,
-seed, dry-run e relatório JSON de rejeições/placements.
+seed, dry-run e relatório JSON de rejeições/placements. Cada categoria usa um
+RNG explícito derivado de `seed + categoria`; o manifesto registra hashes de
+heightmap, surface map, profile e outputs para repetir uma exportação.
 
 Os filtros costeiros duplicados do script antigo foram removidos. No código
 antigo eles faziam reeds, stones e shrubs passarem por regras amplas e depois
 serem forçados novamente ao `COASTAL_COLOR`, anulando parte das regras anteriores.
 Os arquivos de placement já gerados não foram alterados automaticamente.
+
+### Auditorias offline
+
+`source/scripts/audit_surfaces.py` cruza `layers.cfg`,
+`UsedTerrainMaterials` e os RVMATs existentes sem modificar nenhum deles. O
+preflight do Workspace chama o auditor e reporta, sem bloquear, a declaração
+legada de `en_deforested` que requer revisão no Terrain Builder.
 
 Os modelos atuais de junco, pedras com musgo e arbustos continuam como
 **placeholders de autoria** até uma seleção manual de assets tropicais/plausíveis.
