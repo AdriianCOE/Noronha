@@ -57,6 +57,12 @@ python coastal_placement.py ... --seed 20260825
 
 `placement_profiles.json` is the source of placement behavior. The initial `noronha_coast_v1` profile preserves the existing model pools while removing the old duplicated coastal checks that unintentionally forced reeds, stones, and shrubs back onto the coastal color.
 
+The same profile now declares conceptual biomes (`beach`, `rocky_coast`,
+`dry_coast`, `dry_shrub`, `green_shrub`, `wetland`, and `urban_edge`) using
+only existing surface-mask colors. They are validated metadata for future
+profiles; they do not change `noronha_coast_v1` generation until a category is
+explicitly assigned to one.
+
 The current vegetation and moss-stone model pools are **placeholders**, not a statement that those species belong in the final Noronha art direction. Replace model pools only after candidate DayZ/custom assets have been inspected in Terrain Builder/Buldozer.
 
 Future profiles can be added without replacing the current one. Prefer a new profile for a large visual experiment instead of silently rewriting a known-good profile.

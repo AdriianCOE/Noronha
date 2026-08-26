@@ -19,6 +19,15 @@
         "rock": [80, 80, 80],
         "vegetation": [34, 100, 34]
       },
+      "biomes": {
+        "beach": {"surfaces": ["coastal"]},
+        "rocky_coast": {"surfaces": ["coastal", "rock"]},
+        "dry_coast": {"surfaces": ["coastal", "dirt_buffer"]},
+        "dry_shrub": {"surfaces": ["dirt_buffer", "vegetation"]},
+        "green_shrub": {"surfaces": ["vegetation"]},
+        "wetland": {"surfaces": ["coastal", "dirt_buffer"]},
+        "urban_edge": {"surfaces": ["dirt_buffer"]}
+      },
       "categories": {
         "boats": {
           "surfaces": ["coastal"],

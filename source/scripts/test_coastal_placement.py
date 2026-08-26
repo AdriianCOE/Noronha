@@ -36,7 +36,7 @@ class PlacementCoreTests(unittest.TestCase):
         terrain = np.zeros((9, 9), dtype=float)
 
         # Candidate is around the map center. Put dry land on a diagonal sample.
-        row, col = cp.world_to_heightmap(60.0, 60.0, header)
+        row, col = cp.world_to_heightmap(60.1, 60.1, header)
         terrain[row, col] = 2.0
 
         self.assertTrue(
@@ -45,7 +45,7 @@ class PlacementCoreTests(unittest.TestCase):
                 40.0,
                 terrain,
                 header,
-                search_radius=28.284271,
+                search_radius=28.3,
                 min_land_height=1.0,
             )
         )
@@ -60,6 +60,19 @@ class PlacementCoreTests(unittest.TestCase):
                 "stones": {"surfaces": []},
                 "debris": {"surfaces": []},
                 "shrubs": {"surfaces": []},
+            },
+        }
+        with self.assertRaises(ValueError):
+            cp.validate_profile("test", profile)
+
+    def test_profile_validation_rejects_unknown_biome_surface(self):
+        profile = {
+            "global": {},
+            "surfaces": {"coastal": [1, 2, 3]},
+            "biomes": {"beach": {"surfaces": ["missing"]}},
+            "categories": {
+                name: {"surfaces": ["coastal"]}
+                for name in ("boats", "reeds", "stones", "debris", "shrubs")
             },
         }
         with self.assertRaises(ValueError):

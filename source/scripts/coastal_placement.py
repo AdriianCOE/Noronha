@@ -159,6 +159,21 @@ def validate_profile(profile_name: str, profile: Mapping) -> None:
                     f"references unknown surface '{surface_name}'"
                 )
 
+    biomes = profile.get("biomes", {})
+    if not isinstance(biomes, Mapping):
+        raise ValueError(f"Profile '{profile_name}' biomes must be an object")
+    for biome_name, biome in biomes.items():
+        if not isinstance(biome, Mapping):
+            raise ValueError(
+                f"Profile '{profile_name}' biome '{biome_name}' must be an object"
+            )
+        for surface_name in biome.get("surfaces", []):
+            if surface_name not in surfaces:
+                raise ValueError(
+                    f"Profile '{profile_name}' biome '{biome_name}' "
+                    f"references unknown surface '{surface_name}'"
+                )
+
 
 def rgb(profile: Mapping, surface_name: str) -> Tuple[int, int, int]:
     return tuple(profile["surfaces"][surface_name])
