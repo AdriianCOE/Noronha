@@ -11,7 +11,7 @@ class Stage0
 };
 class Stage1
 {
-	texture="noronha\data\layers\m_021_005_lco.png";
+	texture="noronha\data\layers\m_021_005_lca.png";
 	texGen=4;
 };
 class TexGen3
@@ -69,11 +69,11 @@ class TexGen2
 		pos[]={0,0,0};
 	};
 };
-PixelShaderID="Terrain1";
+PixelShaderID="TerrainSNX";
 VertexShaderID="Terrain";
 class Stage2
 {
-	texture="DZ\surfaces\data\terrain\cp_gravel_ca.paa";
+	texture="#(rgb,1,1,1)color(0.5,0.5,0.5,1,cdt)";
 	texGen=0;
 };
 class Stage3
@@ -85,4 +85,9 @@ class Stage4
 {
 	texture="dz\surfaces\data\terrain\cp_gravel_ca.paa";
 	texGen=2;
+};
+class Stage14
+{
+	texture="noronha\data\layers\n_021_005_nohq.png";
+	texGen=3;
 };
