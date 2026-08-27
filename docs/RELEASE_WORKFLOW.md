@@ -1,30 +1,100 @@
 # DEV, TEST e LIVE
 
-Há uma única fonte por repositório. DEV, TEST e LIVE são estados de Git e de builds, não cópias de diretórios nem variantes da CE.
+Ha uma unica fonte por repositorio. DEV, TEST e LIVE sao estados de Git, builds e Workshop; nao sao copias de diretorios nem variantes paralelas do mapa.
 
 ```text
-Terrain Builder -> Noronha.wrp
-                         |
-                         v
-                    PBO Project
-                         |
-                         v
-          autor monta, testa e publica manualmente
+Terrain Builder / GIS / Python
+            |
+            v
+       source/runtime
+            |
+            v
+    validacao estatica
+            |
+            v
+      RaG DayZ Tools
+            |
+            v
+   P:\Noronha_Builds
+            |
+            v
+      teste no DayZ
+            |
+            v
+   publicacao manual
 ```
 
-## Convenção
+## Convencao Git
 
-- `main`: baseline técnica estável, marcada por `baseline-2026-08-25`.
-- `develop`: integração do próximo desenvolvimento, criada a partir da baseline.
-- `feature/*`: trabalho isolado, criado a partir de `develop`.
-- `P:\Noronha_Builds\test\Noronha` e `P:\Noronha_Builds\test\Noronha_Items`: outputs locais, fora de qualquer repositório.
-- `P:\Noronha_Builds\live-reference`: cópias de diagnóstico de PBOs da Workshop; nunca são fonte DEV.
+- `main`: branch normal e fonte canonica do estado atual do projeto.
+- mudancas pequenas e reversiveis podem ir direto para `main` com commits estreitos.
+- `feature/*`: branch **temporaria**, usada apenas para trabalho grande/arriscado que precise de isolamento. Apos validar e integrar, deve ser removida.
+- nao manter `develop` permanente apenas para duplicar o estado de `main`.
 
-Não existem `CE_DEV`, `CE_TEST`, `CE_REAL`, `Noronha_FINAL` ou pastas manuais equivalentes. A CE oficial é `ce/`; a missão offline recebe essa CE por `P:\Noronha_Workspace\tools\sync-ce.ps1`.
+Tags tecnicas podem congelar checkpoints importantes, mas uma tag nao representa automaticamente uma versao publica ou publicacao Workshop.
 
-## Promoção e versões
+## Outputs
 
-O autor executa o build final com PBO Project, monta a combinação de mods e
-realiza os testes DayZ. A tag técnica não representa uma versão pública nem uma
-publicação Workshop; novas mudanças seguem por `feature/*` e são integradas em
-`develop` antes de qualquer promoção deliberada para `main`.
+- `P:\Noronha_Builds`: builds locais, logs, manifests e referencias; fora de qualquer repo.
+- referencias de PBOs da Workshop podem ser preservadas para diagnostico, mas nunca viram fonte DEV.
+- nao criar `Noronha_FINAL`, `Noronha_REAL`, `Noronha_TEST2` ou copias manuais equivalentes como fonte concorrente.
+
+A fonte oficial de cada artefato deve continuar unica.
+
+## Toolchain
+
+O builder oficial atual de Noronha e **RaG DayZ Tools**. Mikero/pboProject nao faz parte do workflow oficial atual.
+
+Ordem logica dos addons do mapa:
+
+```text
+ce
+data
+navmesh
+sounds
+world   <- por ultimo
+```
+
+O autor executa o build final, monta a combinacao de mods, testa no DayZ, assina quando necessario e publica no Workshop quando decidir.
+
+## Tres niveis de verificacao
+
+### STATIC
+
+Exemplos: CfgConvert, JSON/XML parse, Python tests, hashes, paths, LFS e linters opcionais.
+
+STATIC limpo significa que o source passou os checks executados; nao prova comportamento no engine.
+
+### BUILD
+
+Validar que RaG produziu os PBOs esperados e que o artefato final e plausivel. A automacao futura deve conferir, no minimo:
+
+- `ce.pbo`;
+- `data.pbo`;
+- `navmesh.pbo`;
+- `sounds.pbo`;
+- `world.pbo`;
+- tamanho/estrutura plausiveis;
+- hashes e log/manifest.
+
+### RUNTIME
+
+Somente o DayZ confirma comportamento real. Mudancas de lighting, weather, fog, sons, surfaces e outros efeitos visuais continuam `RUNTIME_VISUAL_REVIEW` ate serem observadas no jogo.
+
+O DayZ-MCP pode ser usado futuramente como ferramenta DEV para repetir fixtures de runtime, mas nunca deve virar dependencia do release de Noronha.
+
+## Promocao
+
+O fluxo normal e:
+
+```text
+main/source
+   -> validacao estatica
+   -> build RaG
+   -> smoke test DayZ
+   -> KEEP / ADJUST / REVERT
+   -> tag/release quando fizer sentido
+   -> Workshop manual
+```
+
+Uma feature branch so existe enquanto o risco justifica isolamento. Depois do merge, apagar a branch mantem o repositorio simples sem apagar o historico Git.
