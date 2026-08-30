@@ -1,16 +1,17 @@
-# Python tooling cache
-__pycache__/
-*.py[cod]
-
 # DayZ Tools build output
 *.pbo
 *.pbo.*
 *.binarized
 
-# Local editor state
+# Editor & System files
 .vs/
 .vscode/
 Thumbs.db
 Desktop.ini
+__pycache__/
+*.py[cod]
 
+# Project Specific Ignores
+*.rvmat
+P:/Noronha/data/layers/
 data/layers/
