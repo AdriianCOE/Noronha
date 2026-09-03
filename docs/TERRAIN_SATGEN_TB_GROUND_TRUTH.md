@@ -2,7 +2,7 @@
 
 Fase 2.6 — Terrain Builder compatibility e surface tile audit
 Data: 2026-09-03
-Readiness: **READY_FOR_REAL_PREVIEW = NO** (`SECOND_LANDMARK_REQUIRED`)
+Readiness: **READY_FOR_REAL_PREVIEW = YES** (`SPATIAL_REGISTRATION = CONFIRMED`)
 
 `READY_FOR_TB_REGEN / PROMOTION = NO` permanece um gate separado: ele exige
 regularização consciente dos paths persistidos e resolução manual dos segmentos
@@ -78,15 +78,22 @@ As capturas de 2026-09-03 fornecem evidência manual para Aeroporto:
 
 Aeroporto = SPATIAL_ALIGNMENT_STRONGLY_CONFIRMED.
 
-O segundo landmark continua obrigatório: preferir Porto, usando coastline,
-estrada e construções com marcador visível. Até esse ponto:
+Porto é o segundo landmark independente confirmado pelas capturas de
+2026-09-03: píer curvo, curva da costa, estrada diagonal de chegada, massa
+rochosa e marcador coincidem no satellite; a mask apresenta a mesma costa,
+orientação e eixo principal. Portanto:
 
 ~~~text
-SECOND_LANDMARK_REQUIRED = YES
+AEROPORTO = CONFIRMED
+PORTO = CONFIRMED
+SECOND_LANDMARK_REQUIRED = NO
+SPATIAL_REGISTRATION = CONFIRMED
 ~~~
 
-Não inferir inversão de Y ou pixel-center apenas dos campos UV. O segundo ponto
-independente deve confirmar a transformação world/raster.
+Isso é evidência suficiente para preview regional estritamente read-only. Não
+infere pixel-center subpixel, nem autoriza qualquer ação no Terrain Builder.
+O preview recebe `y` em coordenada de mundo lower-left e o converte para a
+origem top-down do raster; essa conversão é parte do registro confirmado.
 
 ## Cores da mask e compatibilidade TB
 
@@ -178,14 +185,15 @@ alterar a configuração nesta fase.
 | Sampler TB, tile, overlap, texture layer e 4-material mode | Resolvido |
 | Paths legados/cache | `PRE_TB_PROMOTION_GATE`; regularizar conscientemente antes de reimportar/salvar no TB; não bloqueia preview read-only |
 | Aliases TB explícitos | Resolvido para TB_COMPAT; STRICT permanece disponível |
-| Airport alignment | SPATIAL_ALIGNMENT_STRONGLY_CONFIRMED |
-| Segundo landmark Porto | SECOND_LANDMARK_REQUIRED |
+| Airport alignment | CONFIRMED |
+| Porto alignment | CONFIRMED |
+| Registro espacial para preview read-only | SPATIAL_REGISTRATION = CONFIRMED |
 | 4 materiais por segmento | `PRE_TB_PROMOTION_GATE`: 3 segmentos TB_COMPAT com 5 materiais; não bloqueia preview read-only |
 | en_deforested | LEGACY_BUT_PRESENT, não bloqueante |
 
-READY_FOR_REAL_PREVIEW permanece **NO** somente por
-`SECOND_LANDMARK_REQUIRED` (Porto). Após esse landmark independente confirmar o
-registro, o renderer real poderá operar exclusivamente em modo read-only.
+READY_FOR_REAL_PREVIEW = **YES**. O renderer real pode ler regionalmente os
+inputs atuais e escrever somente em `tools/terrain_satgen/out/`; ele não pode
+modificar os inputs, gerar o satmap completo ou interagir com Terrain Builder.
 
 READY_FOR_TB_REGEN / PROMOTION permanece **NO** pelos três segmentos acima do
 limite de quatro materiais e pelos paths persistidos/cacheados. Não gerar

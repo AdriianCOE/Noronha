@@ -10,6 +10,8 @@ from pathlib import Path
 from .inspect import InspectionError, inspect_preset, load_preset, write_segment_diagnostics
 from .parsers import InputFormatError
 from .preview import PreviewError, PreviewRequest, display_layer, load_synthetic_preset, render_preview, write_bmp_atomic
+from .real_preview import RealPreviewError, load_real_preview_preset, render_real_preview, write_bmp_atomic as write_real_bmp_atomic
+from .reference_analysis import ReferenceAnalysisError, image_statistics
 from .safety import UnsafeOutputError, safe_output_path, write_json_atomic
 
 
@@ -56,6 +58,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Also write base, macro, medium, local and surface-map BMPs beside the output",
     )
+    real_command = subcommands.add_parser("real-preview", help="Render a read-only regional Noronha preview")
+    real_command.add_argument("--preset", type=Path, required=True, help="Real-preview TOML preset path")
+    real_command.add_argument("--x", type=float, required=True, help="Registered raster X origin in metres")
+    real_command.add_argument("--y", type=float, required=True, help="Registered raster Y origin in metres")
+    real_command.add_argument("--width-m", type=float, required=True, help="Preview width in metres")
+    real_command.add_argument("--height-m", type=float, required=True, help="Preview height in metres")
+    real_command.add_argument("--meters-per-pixel", type=float, required=True, help="Must match the registered source raster")
+    real_command.add_argument("--tile-size", type=int, default=256, help="Procedural tile edge in pixels (default: 256)")
+    real_command.add_argument("--variant", choices=("original", "subtle", "balanced", "authored"), required=True)
+    real_command.add_argument("--tb-compat", action="store_true", help="Activate only explicit mask aliases")
+    real_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
+    real_command.add_argument("--diagnostics", action="store_true", help="Also write original, structure, recipe and mask-resolved diagnostics")
+    reference_command = subcommands.add_parser("reference-analysis", help="Compare read-only local style references with generated previews")
+    reference_command.add_argument("--reference", type=Path, action="append", required=True, help="Named local reference image; never copied")
+    reference_command.add_argument("--image", type=Path, action="append", required=True, help="Generated BMP path relative to tools/terrain_satgen/out")
+    reference_command.add_argument("--output", type=Path, default=Path("reference-analysis/report.json"), help="JSON path relative to tools/terrain_satgen/out")
     return parser
 
 
@@ -171,11 +189,95 @@ def _run_preview(args: argparse.Namespace) -> int:
     return 0
 
 
+def _real_preview_paths(output: Path, diagnostics: bool) -> dict[str, Path]:
+    paths: dict[str, Path] = {}
+    if diagnostics:
+        paths.update({
+            name: output.with_name(f"{output.stem}.{name}{output.suffix}")
+            for name in ("original", "structure", "recipe", "mask_resolved")
+        })
+    paths["combined"] = output
+    return paths
+
+
+def _run_real_preview(args: argparse.Namespace) -> int:
+    preset = load_real_preview_preset(args.preset)
+    inputs = [preset.inputs[name] for name in ("layers", "height", "satellite", "mask")]
+    paths = _real_preview_paths(args.output, args.diagnostics)
+    safe_paths = {name: safe_output_path(path, OUTPUT_ROOT, inputs) for name, path in paths.items()}
+    request = PreviewRequest(args.x, args.y, args.width_m, args.height_m, args.meters_per_pixel, args.tile_size)
+    result = render_real_preview(preset, request, variant=args.variant, tb_compat=args.tb_compat)
+    layers = {
+        "original": result.original,
+        "structure": result.structure,
+        "recipe": result.recipe,
+        "mask_resolved": result.mask_resolved,
+        "combined": result.combined,
+    }
+    for name, path in safe_paths.items():
+        if name == "combined":
+            continue
+        write_real_bmp_atomic(path, layers[name])
+        print(f"{name}: {path}")
+    if args.diagnostics:
+        manifest_path = safe_output_path(
+            args.output.with_name(f"{args.output.stem}.report.json"),
+            OUTPUT_ROOT,
+            inputs,
+        )
+        write_json_atomic(
+            manifest_path,
+            {
+                "contract": "READ_ONLY_REGIONAL_PREVIEW",
+                "region": {
+                    "x_m": args.x,
+                    "y_m": args.y,
+                    "width_m": args.width_m,
+                    "height_m": args.height_m,
+                    "meters_per_pixel": args.meters_per_pixel,
+                    "world_origin": "lower-left; output rows are top-down raster order",
+                },
+                "variant": result.variant,
+                "mask_mode": result.mask_mode,
+                "inputs": {name: str(preset.inputs[name]) for name in ("satellite", "mask")},
+            },
+        )
+        print(f"report: {manifest_path}")
+    write_real_bmp_atomic(safe_paths["combined"], layers["combined"])
+    print(f"combined: {safe_paths['combined']}")
+    print(
+        f"TerrainSatGen real preview: {result.combined.shape[1]} x {result.combined.shape[0]} px; "
+        f"variant={result.variant}; mask={result.mask_mode}; inputs read-only"
+    )
+    return 0
+
+
+def _run_reference_analysis(args: argparse.Namespace) -> int:
+    references = [path.resolve(strict=True) for path in args.reference]
+    images = [safe_output_path(path, OUTPUT_ROOT) for path in args.image]
+    missing = [str(path) for path in images if not path.is_file()]
+    if missing:
+        raise ReferenceAnalysisError("Generated images do not exist: " + ", ".join(missing))
+    output = safe_output_path(args.output, OUTPUT_ROOT, [*references, *images])
+    report = {
+        "contract": "REFERENCE_ONLY: local reference pixels are sampled for statistics and are never copied into Noronha outputs.",
+        "references": [image_statistics(path) for path in references],
+        "noronha_generated_images": [image_statistics(path) for path in images],
+    }
+    write_json_atomic(output, report)
+    print(f"Reference analysis: {len(references)} references, {len(images)} generated images -> {output}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.command == "preview":
             return _run_preview(args)
+        if args.command == "real-preview":
+            return _run_real_preview(args)
+        if args.command == "reference-analysis":
+            return _run_reference_analysis(args)
         if args.segment_diagnostics and not args.tb_compat:
             raise InspectionError("--segment-diagnostics requires --tb-compat")
         output_path: Path | None = None
@@ -201,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
             diagnostics = write_segment_diagnostics(args.preset, report, diagnostic_root)
             print(f"Segment diagnostics: {len(diagnostics['failed_tiles'])} tiles in {diagnostic_root}")
         return 1 if report["status"] == "FAIL" else 0
-    except (OSError, InspectionError, InputFormatError, PreviewError, UnsafeOutputError, tomllib.TOMLDecodeError) as error:
+    except (OSError, InspectionError, InputFormatError, PreviewError, RealPreviewError, ReferenceAnalysisError, UnsafeOutputError, tomllib.TOMLDecodeError) as error:
         print(f"terrainsat: {error}", file=sys.stderr)
         return 2
 

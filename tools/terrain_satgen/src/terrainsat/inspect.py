@@ -38,7 +38,7 @@ def sha256_file(path: Path, chunk_size: int = 4 * 1024 * 1024) -> str:
 def load_preset(path: Path) -> dict[str, Any]:
     with path.open("rb") as stream:
         preset = tomllib.load(stream)
-    allowed_sections = {"world", "inputs", "mask", "terrain_builder"}
+    allowed_sections = {"world", "inputs", "mask", "terrain_builder", "real_preview"}
     unknown_sections = sorted(set(preset) - allowed_sections)
     if unknown_sections:
         raise InspectionError("Unknown preset sections: " + ", ".join(unknown_sections))
@@ -67,6 +67,8 @@ def load_preset(path: Path) -> dict[str, Any]:
             },
             "terrain_builder",
         )
+    if "real_preview" in preset and not isinstance(preset["real_preview"], dict):
+        raise InspectionError("Preset [real_preview] must be a table")
     required_inputs = {"layers", "height", "satellite", "mask", "vanilla_root"}
     missing_inputs = sorted(required_inputs - preset["inputs"].keys())
     if missing_inputs:

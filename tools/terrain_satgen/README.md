@@ -138,9 +138,59 @@ python -m unittest discover -s tests -v
 Tests generate small BMP files in temporary directories. No binary fixtures are
 versioned.
 
+## Real regional preview
+
+`real-preview` is the Phase 3, read-only renderer for bounded Noronha regions.
+It crops the registered current satellite and mask, uses only explicit aliases
+when `--tb-compat` is selected, separates a broad structure component with a
+haloed Gaussian blur, and applies small world-space recipes per resolved
+surface. It never writes an input, runs Terrain Builder, generates layers or
+renders the full 10240 x 10240 map.
+
+`original` is a faithful satellite crop. `subtle`, `balanced`, and `authored`
+respectively reduce high-frequency photographic detail and increase the
+surface-recipe contribution. The compact recipe table in `presets/noronha.toml`
+controls the six currently observed surfaces; it is not a Terrain Builder
+configuration.
+
+```powershell
+python -m terrainsat real-preview --preset presets\noronha.toml `
+  --x 5200 --y 3300 --width-m 1024 --height-m 1024 --meters-per-pixel 1 `
+  --variant balanced --tb-compat --diagnostics --output previews\field-balanced.bmp
+```
+
+The coordinate convention is the registered Terrain Builder world system: `x`
+and `y` are the crop's lower-left origin in metres and must align to its 1 m/px
+source grid. The renderer converts that lower-left Y convention to top-down
+image rows. Outputs are bounded to 2048² pixels and must be relative to `out/`.
+The blur reads a three-radius halo around each crop, so a nested regional crop
+matches the same pixels from its containing render. `STRICT_RGB` remains a
+diagnostic option and correctly rejects Noronha's four off-by-one RGB values.
+`--diagnostics` also writes a small JSON sidecar that records the selected world
+region, variant and mask mode; it never records or writes source pixels. Its
+`mask_resolved` image is a flat, deterministic surface-class diagnostic, not a
+procedural recipe layer or a valid Terrain Builder mask.
+
+### Local style references
+
+Named local reference images may be analyzed only for derived statistics. The
+tool never copies their pixels into an output or the repository. Frequencies
+remain normalized sample pixels unless the reference's physical scale is
+separately proven. This command writes only JSON beneath `out/`:
+
+```powershell
+python -m terrainsat reference-analysis `
+  --reference P:\chernarus-satmap.png --reference P:\livonia-satmap.png `
+  --image previews\field-original.bmp --image previews\field-balanced.bmp
+```
+
+The bounded first pass records RGB/luminance/saturation distributions, local
+contrast, high-frequency amplitude, medium variance and macro variance. They
+are diagnostic comparisons, not a synthetic quality score or a palette source.
+
 ## Scope
 
-The synthetic preview is intentionally not a terrain generation pipeline.
-Real Noronha satellite input, masks, aliases, Terrain Builder, WRP/navmesh,
-roads, height/slope/aspect/curvature/moisture/coastal fields, PAA export and
-runtime integration remain outside its contract.
+TerrainSatGen is intentionally not a terrain generation or Terrain Builder
+promotion pipeline. WRP/navmesh, source satellite and mask files, Terrain
+Builder, roads, height/slope/aspect/curvature/moisture/coastal systems, PAA
+export and runtime integration remain outside its contract.
