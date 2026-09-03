@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .inspect import InspectionError, inspect_preset, load_preset
 from .parsers import InputFormatError
+from .preview import PreviewError, PreviewRequest, display_layer, load_synthetic_preset, render_preview, write_bmp_atomic
 from .safety import UnsafeOutputError, safe_output_path, write_json_atomic
 
 
@@ -25,6 +26,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json-out",
         type=Path,
         help="Optional report path relative to tools/terrain_satgen/out",
+    )
+    preview_command = subcommands.add_parser("preview", help="Render a synthetic procedural preview")
+    preview_command.add_argument("--preset", type=Path, required=True, help="Synthetic TOML preset path")
+    preview_command.add_argument("--x", type=float, required=True, help="Absolute world X origin in metres")
+    preview_command.add_argument("--y", type=float, required=True, help="Absolute world Y origin in metres")
+    preview_command.add_argument("--width-m", type=float, required=True, help="Preview width in metres")
+    preview_command.add_argument("--height-m", type=float, required=True, help="Preview height in metres")
+    preview_command.add_argument("--meters-per-pixel", type=float, required=True, help="Metres per output pixel")
+    preview_command.add_argument("--tile-size", type=int, default=256, help="Tile edge in pixels (default: 256)")
+    preview_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
+    preview_command.add_argument(
+        "--debug-layers",
+        action="store_true",
+        help="Also write base, macro, medium, local and surface-map BMPs beside the output",
     )
     return parser
 
@@ -86,9 +101,41 @@ def _print_report(report: dict[str, object]) -> None:
         print("Inspect completed with validation failures; see [FAIL] entries above.", file=sys.stderr)
 
 
+def _preview_paths(output: Path, debug_layers: bool) -> dict[str, Path]:
+    paths: dict[str, Path] = {}
+    if debug_layers:
+        paths.update({
+            name: output.with_name(f"{output.stem}.{name}{output.suffix}")
+            for name in ("base", "macro", "medium", "local", "surface_map")
+        })
+    # The primary requested output is promoted last: a debug write failure never leaves it behind.
+    paths["combined"] = output
+    return paths
+
+
+def _run_preview(args: argparse.Namespace) -> int:
+    preset = load_synthetic_preset(args.preset)
+    paths = _preview_paths(args.output, args.debug_layers)
+    safe_paths = {name: safe_output_path(path, OUTPUT_ROOT, [args.preset]) for name, path in paths.items()}
+    result = render_preview(
+        preset,
+        PreviewRequest(args.x, args.y, args.width_m, args.height_m, args.meters_per_pixel, args.tile_size),
+    )
+    for name, path in safe_paths.items():
+        write_bmp_atomic(path, display_layer(result, name, preset.materials))
+        print(f"{name}: {path}")
+    print(
+        f"TerrainSatGen synthetic preview: {result.combined.shape[1]} x {result.combined.shape[0]} px; "
+        f"clipped pixels={result.clipped_pixel_count}"
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        if args.command == "preview":
+            return _run_preview(args)
         output_path: Path | None = None
         if args.json_out is not None:
             preset = load_preset(args.preset)
@@ -100,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
             write_json_atomic(output_path, report)
             print(f"JSON report: {output_path}")
         return 1 if report["status"] == "FAIL" else 0
-    except (OSError, InspectionError, InputFormatError, UnsafeOutputError, tomllib.TOMLDecodeError) as error:
+    except (OSError, InspectionError, InputFormatError, PreviewError, UnsafeOutputError, tomllib.TOMLDecodeError) as error:
         print(f"terrainsat: {error}", file=sys.stderr)
         return 2
 

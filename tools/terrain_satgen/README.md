@@ -1,11 +1,11 @@
 # TerrainSatGen
 
 TerrainSatGen is a developer tool for inspecting the inputs used to author a
-DayZ terrain satellite map. Version 0.1 is intentionally inspect-only: it reads
+DayZ terrain satellite map and rendering explicitly synthetic previews. It reads
 `layers.cfg`, an ESRI ASCII heightmap, a satellite image and a surface mask,
 then reports alignment, color usage, vanilla references and SHA-256 hashes.
 
-It does not render, recolor or replace terrain assets. It does not invoke
+It never renders, recolors or replaces the Noronha assets. It does not invoke
 Terrain Builder, RaG, Binarize or DayZ.
 
 ## Development installation
@@ -60,6 +60,40 @@ no active aliases pending `MANUAL_TB_REVIEW`.
 Every report retains `MANUAL_TB_REVIEW` and `RUNTIME_VISUAL_REVIEW`: offline
 inspection cannot prove Terrain Builder import behavior or DayZ visuals.
 
+## Synthetic procedural preview
+
+`preview` accepts only a TOML file whose top level is `mode = "synthetic"`.
+It rejects the Noronha inspection preset before it can create an output. The
+fixture has four deliberately distinct, irregular procedural regions: grass,
+forest, dirt and rock. It is a test pattern, not a reconstruction of Noronha.
+
+```powershell
+terrainsat preview --preset tests\fixtures\procedural.toml --x 0 --y 0 `
+  --width-m 1024 --height-m 1024 --meters-per-pixel 1 --output preview.bmp
+```
+
+The output is written to `tools\terrain_satgen\out\preview.bmp`; `--output`
+is always relative to that directory. `--debug-layers` additionally writes
+`preview.base.bmp`, `preview.macro.bmp`, `preview.medium.bmp`,
+`preview.local.bmp` and `preview.surface_map.bmp` beside it. Output promotion
+is atomic.
+
+Synthetic previews are intentionally bounded to 4,194,304 pixels (the tested
+2048² maximum), preventing accidental 10K/20K renders before their arrays are
+allocated.
+
+All samples use the pixel-centre coordinate convention
+`origin + (pixel + 0.5) * metres-per-pixel`, including tiles and regional
+crops. The BLAKE2-derived seeds and absolute metre coordinates make a 1 m/px
+sample agree with the matching 0.5 m/px sample and make aligned regional crops
+match a full render. No filter is applied, so tiles require no halo.
+
+Preview bands are independently enabled in the synthetic TOML. Their macro,
+medium and local value-noise fields are vectorized NumPy hash-grid samples;
+there is no Python per-pixel random loop or external noise package. Float32
+layers are composited before final clamping, and the command reports the count
+of clipped pixels.
+
 ## Tests
 
 ```powershell
@@ -71,7 +105,7 @@ versioned.
 
 ## Scope
 
-Preview, generation, comparison, procedural fields, distance fields,
-height-aware effects, coastal effects and style analysis are future phases.
-They are not registered as commands or represented by empty modules in this
-MVP.
+The synthetic preview is intentionally not a terrain generation pipeline.
+Real Noronha satellite input, masks, aliases, Terrain Builder, WRP/navmesh,
+roads, height/slope/aspect/curvature/moisture/coastal fields, PAA export and
+runtime integration remain outside its contract.

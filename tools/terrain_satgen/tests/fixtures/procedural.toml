@@ -1,0 +1,43 @@
+mode = "synthetic"
+
+[world]
+size_m = 4096
+
+[synthetic]
+world_seed = "terrain-satgen-fixture-v1"
+region_cell_size_m = 760.0
+
+[synthetic.bands.macro]
+enabled = true
+cell_size_m = 360.0
+strength = 28.0
+
+[synthetic.bands.medium]
+enabled = true
+cell_size_m = 72.0
+strength = 15.0
+
+[synthetic.bands.local]
+enabled = true
+cell_size_m = 13.0
+strength = 7.0
+
+[synthetic.materials.grass]
+rgb = [76, 117, 64]
+seed = "grass-surface-v1"
+tint = [0.72, 1.0, 0.66]
+
+[synthetic.materials.forest]
+rgb = [38, 79, 42]
+seed = "forest-surface-v1"
+tint = [0.54, 0.86, 0.52]
+
+[synthetic.materials.dirt]
+rgb = [129, 93, 57]
+seed = "dirt-surface-v1"
+tint = [1.0, 0.74, 0.47]
+
+[synthetic.materials.rock]
+rgb = [106, 106, 111]
+seed = "rock-surface-v1"
+tint = [0.82, 0.87, 1.0]

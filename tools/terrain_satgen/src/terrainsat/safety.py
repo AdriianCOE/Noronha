@@ -19,7 +19,7 @@ def safe_output_path(
     input_paths: Iterable[Path] = (),
 ) -> Path:
     if relative_path.is_absolute():
-        raise UnsafeOutputError("--json-out must be relative to the tool out directory")
+        raise UnsafeOutputError("output path must be relative to the tool out directory")
     if output_root.is_symlink():
         raise UnsafeOutputError("The tool out directory must not be a symlink")
     root = output_root.resolve(strict=False)
@@ -27,33 +27,35 @@ def safe_output_path(
     try:
         common = os.path.commonpath((root, candidate))
     except ValueError as error:
-        raise UnsafeOutputError("--json-out is on a different drive") from error
+        raise UnsafeOutputError("output path is on a different drive") from error
     if common != str(root):
-        raise UnsafeOutputError("--json-out escapes the tool out directory")
+        raise UnsafeOutputError("output path escapes the tool out directory")
     resolved_inputs = {path.resolve(strict=False) for path in input_paths}
     if candidate in resolved_inputs:
-        raise UnsafeOutputError("--json-out resolves to an input file")
+        raise UnsafeOutputError("output path resolves to an input file")
     if candidate == root:
-        raise UnsafeOutputError("--json-out must name a file below the out directory")
+        raise UnsafeOutputError("output path must name a file below the out directory")
     return candidate
 
 
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+    write_bytes_atomic(path, (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+
+
+def write_bytes_atomic(path: Path, payload: bytes) -> None:
+    """Write a generated artifact atomically below the already-validated output root."""
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
+            mode="wb",
             prefix=f".{path.name}.",
             suffix=".tmp",
             dir=path.parent,
             delete=False,
         ) as stream:
             temporary = Path(stream.name)
-            json.dump(payload, stream, ensure_ascii=False, indent=2)
-            stream.write("\n")
+            stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
