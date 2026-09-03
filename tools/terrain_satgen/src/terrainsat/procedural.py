@@ -53,3 +53,80 @@ def value_noise(
     lower = v00 + (v10 - v00) * sx[None, :]
     upper = v01 + (v11 - v01) * sx[None, :]
     return (lower + (upper - lower) * sy[:, None]).astype(np.float32)
+
+
+def value_noise_at(
+    x_m: np.ndarray,
+    y_m: np.ndarray,
+    *,
+    cell_size_m: float,
+    seed: int,
+) -> np.ndarray:
+    """Sample the same stable value noise at matching two-dimensional points."""
+    if cell_size_m <= 0:
+        raise ValueError("cell_size_m must be positive")
+    gx = np.asarray(x_m, dtype=np.float32) / np.float32(cell_size_m)
+    gy = np.asarray(y_m, dtype=np.float32) / np.float32(cell_size_m)
+    gx, gy = np.broadcast_arrays(gx, gy)
+    x0 = np.floor(gx).astype(np.int64)
+    y0 = np.floor(gy).astype(np.int64)
+    tx = (gx - x0).astype(np.float32)
+    ty = (gy - y0).astype(np.float32)
+    sx = tx * tx * (np.float32(3.0) - np.float32(2.0) * tx)
+    sy = ty * ty * (np.float32(3.0) - np.float32(2.0) * ty)
+    v00 = _hash_grid(x0, y0, seed)
+    v10 = _hash_grid(x0 + 1, y0, seed)
+    v01 = _hash_grid(x0, y0 + 1, seed)
+    v11 = _hash_grid(x0 + 1, y0 + 1, seed)
+    lower = v00 + (v10 - v00) * sx
+    upper = v01 + (v11 - v01) * sx
+    return (lower + (upper - lower) * sy).astype(np.float32)
+
+
+def warped_coordinates(
+    x_m: np.ndarray,
+    y_m: np.ndarray,
+    *,
+    scale_m: float,
+    strength_m: float,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return a mild, deterministic world-space warp for coherent fields."""
+    x_grid, y_grid = np.broadcast_arrays(np.asarray(x_m, dtype=np.float32)[None, :], np.asarray(y_m, dtype=np.float32)[:, None])
+    if strength_m == 0:
+        return x_grid, y_grid
+    x_offset = (value_noise_at(x_grid, y_grid, cell_size_m=scale_m, seed=stable_seed(seed, "x")) - np.float32(0.5)) * np.float32(2.0 * strength_m)
+    y_offset = (value_noise_at(x_grid, y_grid, cell_size_m=scale_m, seed=stable_seed(seed, "y")) - np.float32(0.5)) * np.float32(2.0 * strength_m)
+    return (x_grid + x_offset).astype(np.float32), (y_grid + y_offset).astype(np.float32)
+
+
+def coherent_patch_field(
+    x_m: np.ndarray,
+    y_m: np.ndarray,
+    *,
+    patch_scale_m: float,
+    warp_scale_m: float,
+    warp_strength_m: float,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return continuous patch variation and a three-band diagnostic identity."""
+    warped_x, warped_y = warped_coordinates(
+        x_m, y_m, scale_m=warp_scale_m, strength_m=warp_strength_m, seed=seed,
+    )
+    broad = value_noise_at(warped_x, warped_y, cell_size_m=patch_scale_m, seed=stable_seed(seed, "broad"))
+    breakup = value_noise_at(warped_x, warped_y, cell_size_m=patch_scale_m * 0.46, seed=stable_seed(seed, "breakup"))
+    signal = (broad * np.float32(0.7) + breakup * np.float32(0.3)).astype(np.float32)
+    identity = np.digitize(signal, (np.float32(0.38), np.float32(0.63))).astype(np.uint8)
+    return (signal - np.float32(0.5)) * np.float32(2.0), identity
+
+
+def anisotropic_bands(x_m: np.ndarray, y_m: np.ndarray, *, scale_m: float, strength: float) -> np.ndarray:
+    """Optional subtle field directionality; zero strength is an exact no-op."""
+    x_array, y_array = np.asarray(x_m, dtype=np.float32), np.asarray(y_m, dtype=np.float32)
+    if x_array.ndim == y_array.ndim == 1:
+        x_array, y_array = x_array[None, :], y_array[:, None]
+    x_grid, y_grid = np.broadcast_arrays(x_array, y_array)
+    if strength == 0:
+        return np.zeros(x_grid.shape, dtype=np.float32)
+    direction = (x_grid + y_grid * np.float32(0.35)) / np.float32(scale_m)
+    return np.sin(direction * np.float32(2.0 * np.pi)).astype(np.float32) * np.float32(strength)

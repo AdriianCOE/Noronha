@@ -15,7 +15,7 @@ from PIL import Image, ImageFilter
 from .inspect import _color_aliases, _input_paths, _world_size, load_preset
 from .parsers import AscStats, parse_asc, parse_layers
 from .preview import PreviewRequest
-from .procedural import stable_seed, value_noise
+from .procedural import anisotropic_bands, coherent_patch_field, stable_seed, value_noise, value_noise_at, warped_coordinates
 from .safety import write_bytes_atomic
 
 
@@ -44,6 +44,11 @@ class Recipe:
     local_strength: float
     preservation_strength: float
     feather_width_m: float
+    patch_strength: float
+    motif_strength: float
+    motif_scale_m: float
+    anisotropy_strength: float
+    anisotropy_scale_m: float
 
 
 @dataclass(frozen=True)
@@ -68,6 +73,16 @@ class HeightContextConfig:
 
 
 @dataclass(frozen=True)
+class ArtPassConfig:
+    patch_scale_m: float
+    warp_scale_m: float
+    warp_strength_m: float
+    adaptive_radius_px: int
+    adaptive_min_multiplier: float
+    adaptive_max_multiplier: float
+
+
+@dataclass(frozen=True)
 class RealPreviewPreset:
     path: Path
     world_size_m: tuple[float, float]
@@ -81,6 +96,7 @@ class RealPreviewPreset:
     world_seed: str
     structure_blur_radius_px: int
     meso_blur_radius_px: int
+    art_pass: ArtPassConfig
 
 
 @dataclass(frozen=True)
@@ -96,6 +112,11 @@ class RealPreviewResult:
     variant: str
     mask_mode: str
     context_counts: dict[str, int]
+    source_uniformity: np.ndarray
+    adaptive_strength: np.ndarray
+    patch_identity: np.ndarray
+    warped_meso: np.ndarray
+    forest_motif: np.ndarray
 
 
 def _number(value: Any, *, label: str, minimum: float | None = None, maximum: float | None = None) -> float:
@@ -119,7 +140,8 @@ def _relative_recipe(name: str, item: Any) -> Recipe:
     allowed = {
         "brightness_offset", "saturation_adjustment", "warmth_bias", "channel_bias",
         "macro_strength", "medium_strength", "local_strength", "preservation_strength",
-        "feather_width_m",
+        "feather_width_m", "patch_strength", "motif_strength", "motif_scale_m",
+        "anisotropy_strength", "anisotropy_scale_m",
     }
     unexpected = sorted(set(item) - allowed)
     if unexpected:
@@ -138,6 +160,11 @@ def _relative_recipe(name: str, item: Any) -> Recipe:
         local_strength=_unit(item.get("local_strength"), label=f"recipe {name} local_strength"),
         preservation_strength=_unit(item.get("preservation_strength"), label=f"recipe {name} preservation_strength"),
         feather_width_m=_number(item.get("feather_width_m"), label=f"recipe {name} feather_width_m", minimum=0.0, maximum=64.0),
+        patch_strength=_unit(item.get("patch_strength", 0.0), label=f"recipe {name} patch_strength"),
+        motif_strength=_unit(item.get("motif_strength", 0.0), label=f"recipe {name} motif_strength"),
+        motif_scale_m=_number(item.get("motif_scale_m", 80.0), label=f"recipe {name} motif_scale_m", minimum=4.0, maximum=512.0),
+        anisotropy_strength=_unit(item.get("anisotropy_strength", 0.0), label=f"recipe {name} anisotropy_strength"),
+        anisotropy_scale_m=_number(item.get("anisotropy_scale_m", 24.0), label=f"recipe {name} anisotropy_scale_m", minimum=4.0, maximum=256.0),
     )
 
 
@@ -166,6 +193,28 @@ def _height_context_config(config: Any) -> HeightContextConfig:
     return result
 
 
+def _art_pass_config(config: Any) -> ArtPassConfig:
+    if config is None:
+        return ArtPassConfig(220.0, 480.0, 22.0, 5, 0.68, 1.18)
+    if not isinstance(config, dict):
+        raise RealPreviewError("art_pass must be a table")
+    allowed = {"patch_scale_m", "warp_scale_m", "warp_strength_m", "adaptive_radius_px", "adaptive_min_multiplier", "adaptive_max_multiplier"}
+    unexpected = sorted(set(config) - allowed)
+    if unexpected:
+        raise RealPreviewError("art_pass has unknown keys: " + ", ".join(unexpected))
+    result = ArtPassConfig(
+        patch_scale_m=_number(config.get("patch_scale_m"), label="art_pass patch_scale_m", minimum=32.0, maximum=1024.0),
+        warp_scale_m=_number(config.get("warp_scale_m"), label="art_pass warp_scale_m", minimum=64.0, maximum=2048.0),
+        warp_strength_m=_number(config.get("warp_strength_m"), label="art_pass warp_strength_m", minimum=0.0, maximum=128.0),
+        adaptive_radius_px=int(_number(config.get("adaptive_radius_px"), label="art_pass adaptive_radius_px", minimum=1, maximum=32)),
+        adaptive_min_multiplier=_number(config.get("adaptive_min_multiplier"), label="art_pass adaptive_min_multiplier", minimum=0.05, maximum=2.0),
+        adaptive_max_multiplier=_number(config.get("adaptive_max_multiplier"), label="art_pass adaptive_max_multiplier", minimum=0.05, maximum=2.0),
+    )
+    if result.adaptive_min_multiplier > result.adaptive_max_multiplier:
+        raise RealPreviewError("art_pass adaptive_min_multiplier must not exceed adaptive_max_multiplier")
+    return result
+
+
 def load_real_preview_preset(path: Path) -> RealPreviewPreset:
     """Load the compact, explicit Phase 3.1 modulation model."""
     raw = load_preset(path)
@@ -174,7 +223,7 @@ def load_real_preview_preset(path: Path) -> RealPreviewPreset:
         raise RealPreviewError("real-preview requires a [real_preview] table")
     allowed = {
         "world_seed", "structure_blur_radius_px", "meso_blur_radius_px", "variants",
-        "recipes", "height_context", "context_overrides",
+        "recipes", "height_context", "context_overrides", "art_pass",
     }
     unexpected = sorted(set(config) - allowed)
     if unexpected:
@@ -224,6 +273,7 @@ def load_real_preview_preset(path: Path) -> RealPreviewPreset:
         world_seed=str(config.get("world_seed", "terrain-satgen-real-preview")),
         structure_blur_radius_px=structure_blur_radius_px,
         meso_blur_radius_px=meso_blur_radius_px,
+        art_pass=_art_pass_config(config.get("art_pass")),
     )
 
 
@@ -395,10 +445,40 @@ def _height_context(preset: RealPreviewPreset, request: PreviewRequest) -> np.nd
     return context
 
 
-def _relative_recipe_layer(preset: RealPreviewPreset, original: np.ndarray, indices: np.ndarray, request: PreviewRequest, context: np.ndarray, feather_distance: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _source_uniformity(path: Path, box: tuple[int, int, int, int], original: np.ndarray, radius: int, art_pass: ArtPassConfig) -> tuple[np.ndarray, np.ndarray]:
+    """Reduce material modulation where the source already has meaningful meso detail."""
+    local_base = _structure_crop(path, box, radius).astype(np.float32)
+    original_luma = original.astype(np.float32).dot(np.asarray((0.2126, 0.7152, 0.0722), dtype=np.float32))
+    local_luma = local_base.dot(np.asarray((0.2126, 0.7152, 0.0722), dtype=np.float32))
+    local_structure = np.abs(original_luma - local_luma)
+    uniformity = np.float32(1.0) - np.clip(local_structure / np.float32(18.0), 0.0, 1.0)
+    adaptive = np.float32(art_pass.adaptive_min_multiplier) + uniformity * np.float32(art_pass.adaptive_max_multiplier - art_pass.adaptive_min_multiplier)
+    return uniformity.astype(np.float32), adaptive.astype(np.float32)
+
+
+def scalar_field_display(field: np.ndarray, *, maximum: float = 1.0) -> np.ndarray:
+    """Show a bounded scalar diagnostic as neutral RGB without affecting render data."""
+    grey = np.rint(np.clip(field.astype(np.float32) / np.float32(maximum), 0.0, 1.0) * 255.0).astype(np.uint8)
+    return np.repeat(grey[:, :, None], 3, axis=2)
+
+
+def _relative_recipe_layer(
+    preset: RealPreviewPreset,
+    original: np.ndarray,
+    indices: np.ndarray,
+    request: PreviewRequest,
+    context: np.ndarray,
+    feather_distance: np.ndarray,
+    adaptive_strength: np.ndarray,
+    *,
+    art_pass: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     height, width = indices.shape
     result = original.astype(np.float32).copy()
     resolved = np.empty((height, width, 3), dtype=np.uint8)
+    patch_identity = np.zeros((height, width), dtype=np.uint8)
+    warped_meso = np.zeros((height, width), dtype=np.float32)
+    forest_motif = np.zeros((height, width), dtype=np.float32)
     recipes = list(preset.recipes.values())
     for top in range(0, height, request.tile_size_px):
         for left in range(0, width, request.tile_size_px):
@@ -419,6 +499,37 @@ def _relative_recipe_layer(preset: RealPreviewPreset, original: np.ndarray, indi
                 variation = np.zeros(tile_indices.shape, dtype=np.float32)
                 for band, scale, strength in (("macro", 320.0, recipe.macro_strength), ("medium", 72.0, recipe.medium_strength), ("local", 18.0, recipe.local_strength)):
                     variation += (value_noise(xs, ys, cell_size_m=scale, seed=stable_seed(preset.world_seed, recipe.name, band)) - np.float32(0.5)) * np.float32(2.0 * strength * 255.0)
+                if art_pass:
+                    patch, identity = coherent_patch_field(
+                        xs, ys,
+                        patch_scale_m=preset.art_pass.patch_scale_m,
+                        warp_scale_m=preset.art_pass.warp_scale_m,
+                        warp_strength_m=preset.art_pass.warp_strength_m,
+                        seed=stable_seed(preset.world_seed, recipe.name, "patch"),
+                    )
+                    variation += patch * np.float32(recipe.patch_strength * 255.0)
+                    patch_identity[top:bottom, left:right][selected] = identity[selected]
+                    warped_meso[top:bottom, left:right][selected] = patch[selected]
+                    if recipe.motif_strength > 0:
+                        warped_x, warped_y = warped_coordinates(
+                            xs, ys,
+                            scale_m=preset.art_pass.warp_scale_m,
+                            strength_m=preset.art_pass.warp_strength_m,
+                            seed=stable_seed(preset.world_seed, recipe.name, "motif-warp"),
+                        )
+                        motif = (value_noise_at(warped_x, warped_y, cell_size_m=recipe.motif_scale_m, seed=stable_seed(preset.world_seed, recipe.name, "motif")) - np.float32(0.5)) * np.float32(2.0)
+                        variation += motif * np.float32(recipe.motif_strength * 255.0)
+                        if recipe.name == "en_forest_con":
+                            forest_motif[top:bottom, left:right][selected] = motif[selected]
+                    if recipe.anisotropy_strength > 0:
+                        warped_x, warped_y = warped_coordinates(
+                            xs, ys,
+                            scale_m=preset.art_pass.warp_scale_m,
+                            strength_m=preset.art_pass.warp_strength_m,
+                            seed=stable_seed(preset.world_seed, recipe.name, "anisotropy-warp"),
+                        )
+                        bands = anisotropic_bands(warped_x, warped_y, scale_m=recipe.anisotropy_scale_m, strength=recipe.anisotropy_strength)
+                        variation += bands * np.float32(255.0)
                 adjusted += variation[:, :, None]
                 preservation = np.full(tile_indices.shape, recipe.preservation_strength, dtype=np.float32)
                 for code, context_name in ((WATER, "water"), (COAST_TRANSITION, "coast_transition"), (LAND, "land")):
@@ -430,9 +541,11 @@ def _relative_recipe_layer(preset: RealPreviewPreset, original: np.ndarray, indi
                 strength[tile_context == COAST_TRANSITION] = np.minimum(strength[tile_context == COAST_TRANSITION], preset.height_context.coast_modulation_cap)
                 if recipe.feather_width_m > 0:
                     strength *= np.minimum(1.0, feather_distance[top:bottom, left:right].astype(np.float32) * request.meters_per_pixel / recipe.feather_width_m)
+                if art_pass:
+                    strength *= adaptive_strength[top:bottom, left:right]
                 tile_result[selected] = tile_original[selected] + (adjusted[selected] - tile_original[selected]) * strength[selected, None]
                 tile_resolved[selected] = np.asarray((40 + (index * 71) % 190, 70 + (index * 47) % 160, 60 + (index * 91) % 180), dtype=np.uint8)
-    return np.clip(result, 0, 255).astype(np.float32), resolved
+    return np.clip(result, 0, 255).astype(np.float32), resolved, patch_identity, warped_meso, forest_motif
 
 
 def _boundary_diagnostic(indices: np.ndarray, distance: np.ndarray, recipes: list[Recipe], request: PreviewRequest) -> np.ndarray:
@@ -444,7 +557,7 @@ def _boundary_diagnostic(indices: np.ndarray, distance: np.ndarray, recipes: lis
     return image
 
 
-def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, variant: str, tb_compat: bool) -> RealPreviewResult:
+def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, variant: str, tb_compat: bool, art_pass: bool = False) -> RealPreviewResult:
     """Render a bounded Phase 3.1 experiment from immutable source inputs."""
     if variant != "original" and variant not in preset.variants:
         raise RealPreviewError(f"unknown real-preview variant {variant!r}")
@@ -469,9 +582,11 @@ def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, v
     # not require an alias resolution or an ASC context read.
     if variant == "original":
         empty = np.zeros_like(original)
+        empty_scalar = np.zeros(original.shape[:2], dtype=np.float32)
         return RealPreviewResult(
             original, structure, meso, micro, original.copy(), empty, empty, original.copy(), variant,
             "TB_COMPAT" if tb_compat else "STRICT_RGB", {"water": 0, "coast_transition": 0, "land": 0},
+            empty_scalar, empty_scalar, np.zeros(original.shape[:2], dtype=np.uint8), empty_scalar, empty_scalar,
         )
     max_feather = math.ceil(max(recipe.feather_width_m for recipe in preset.recipes.values()) / request.meters_per_pixel)
     expanded_box, core = _expand_box(box, max_feather, raster_size)
@@ -482,7 +597,12 @@ def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, v
     expanded_distance = _boundary_distance(expanded_indices, max_feather)
     indices, distance = expanded_indices[core], expanded_distance[core]
     context = _height_context(preset, request)
-    recipe, mask_resolved = _relative_recipe_layer(preset, original, indices, request, context, distance)
+    source_uniformity, adaptive_strength = _source_uniformity(
+        preset.inputs["satellite"], box, original, preset.art_pass.adaptive_radius_px, preset.art_pass,
+    )
+    recipe, mask_resolved, patch_identity, warped_meso, forest_motif = _relative_recipe_layer(
+        preset, original, indices, request, context, distance, adaptive_strength, art_pass=art_pass,
+    )
     boundary = _boundary_diagnostic(indices, distance, list(preset.recipes.values()), request)
     settings = preset.variants[variant]
     frequency_base = (
@@ -499,6 +619,7 @@ def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, v
         original, structure, meso, micro, recipe.astype(np.uint8), mask_resolved, boundary,
         combined, variant, "TB_COMPAT" if tb_compat else "STRICT_RGB",
         {"water": int(np.count_nonzero(context == WATER)), "coast_transition": int(np.count_nonzero(context == COAST_TRANSITION)), "land": int(np.count_nonzero(context == LAND))},
+        source_uniformity, adaptive_strength, patch_identity, warped_meso, forest_motif,
     )
 
 

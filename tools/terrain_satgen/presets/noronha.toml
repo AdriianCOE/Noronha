@@ -40,6 +40,16 @@ world_seed = "noronha-real-preview-v32"
 structure_blur_radius_px = 18
 meso_blur_radius_px = 4
 
+# Phase 3.3 is opt-in at the CLI with --art-pass.  The prior Phase 3.2 path
+# remains the direct baseline for meaningful before/after comparisons.
+[real_preview.art_pass]
+patch_scale_m = 220.0
+warp_scale_m = 480.0
+warp_strength_m = 22.0
+adaptive_radius_px = 5
+adaptive_min_multiplier = 0.62
+adaptive_max_multiplier = 1.30
+
 [real_preview.variants.subtle]
 macro_preservation = 1.00
 meso_preservation = 0.92
@@ -81,6 +91,11 @@ medium_strength = 0.040
 local_strength = 0.010
 preservation_strength = 0.62
 feather_width_m = 18.0
+patch_strength = 0.120
+motif_strength = 0.035
+motif_scale_m = 64.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 [real_preview.recipes.en_forest_con]
 brightness_offset = -0.030
@@ -92,6 +107,11 @@ medium_strength = 0.035
 local_strength = 0.010
 preservation_strength = 0.64
 feather_width_m = 24.0
+patch_strength = 0.095
+motif_strength = 0.060
+motif_scale_m = 96.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 [real_preview.recipes.en_soil]
 brightness_offset = -0.022
@@ -103,6 +123,11 @@ medium_strength = 0.035
 local_strength = 0.008
 preservation_strength = 0.60
 feather_width_m = 12.0
+patch_strength = 0.140
+motif_strength = 0.030
+motif_scale_m = 52.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 [real_preview.recipes.en_stubble]
 brightness_offset = -0.010
@@ -114,6 +139,11 @@ medium_strength = 0.040
 local_strength = 0.010
 preservation_strength = 0.58
 feather_width_m = 12.0
+patch_strength = 0.125
+motif_strength = 0.020
+motif_scale_m = 72.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 [real_preview.recipes.cp_gravel]
 brightness_offset = -0.012
@@ -125,6 +155,11 @@ medium_strength = 0.018
 local_strength = 0.004
 preservation_strength = 0.85
 feather_width_m = 3.0
+patch_strength = 0.040
+motif_strength = 0.012
+motif_scale_m = 40.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 [real_preview.recipes.cp_concrete2]
 brightness_offset = -0.008
@@ -136,6 +171,11 @@ medium_strength = 0.010
 local_strength = 0.003
 preservation_strength = 0.78
 feather_width_m = 2.0
+patch_strength = 0.010
+motif_strength = 0.004
+motif_scale_m = 36.0
+anisotropy_strength = 0.0
+anisotropy_scale_m = 24.0
 
 # Minimal contextual exception discovered in the Porto crop. This does not
 # reinterpret or rewrite cp_gravel in the mask; it only protects water pixels.

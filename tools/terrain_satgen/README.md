@@ -188,6 +188,23 @@ JSON sidecar that records the selected world region, variant and mask mode; it n
 procedural recipe layer or a valid Terrain Builder mask. The optional `boundary`
 diagnostic shows only the renderer's feather zone; it is not a mask output.
 
+Phase 3.3 adds an opt-in `--art-pass` for controlled material motifs. It keeps
+the Phase 3.2 renderer as the default comparison path, then adds mild warped
+world-space patches and source-adaptive modulation: uniform source areas receive
+somewhat more material variation while roads, field breakup and other existing
+local structure receive less, never zero, modulation. Recipes remain relative
+to the original satellite; they do not use reference pixels, edit inputs or
+infer a new mask. The art-pass diagnostics additionally include source
+uniformity, patch identity, warped meso field, forest motif and final adaptive
+strength. Stubble anisotropy is configured at zero in the Noronha preset.
+
+```powershell
+python -m terrainsat real-preview --preset presets\noronha.toml `
+  --x 3600 --y 4500 --width-m 1024 --height-m 1024 --meters-per-pixel 1 `
+  --variant balanced --tb-compat --art-pass --diagnostics `
+  --output previews-phase33\natural-balanced-33.bmp
+```
+
 ### Local style references
 
 Named local reference images may be analyzed only for derived statistics. The

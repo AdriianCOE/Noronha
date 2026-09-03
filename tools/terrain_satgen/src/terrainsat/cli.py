@@ -15,6 +15,7 @@ from .real_preview import (
     frequency_component_display,
     load_real_preview_preset,
     render_real_preview,
+    scalar_field_display,
     write_bmp_atomic as write_real_bmp_atomic,
 )
 from .reference_analysis import ReferenceAnalysisError, image_statistics, local_roi_statistics
@@ -74,6 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
     real_command.add_argument("--tile-size", type=int, default=256, help="Procedural tile edge in pixels (default: 256)")
     real_command.add_argument("--variant", choices=("original", "subtle", "balanced", "authored"), required=True)
     real_command.add_argument("--tb-compat", action="store_true", help="Activate only explicit mask aliases")
+    real_command.add_argument("--art-pass", action="store_true", help="Enable the bounded Phase 3.3 material procedural art pass")
     real_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
     real_command.add_argument("--diagnostics", action="store_true", help="Also write original, macro/meso/micro, relative-recipe, mask and boundary diagnostics")
     reference_command = subcommands.add_parser("reference-analysis", help="Compare read-only local style references with generated previews")
@@ -202,7 +204,7 @@ def _real_preview_paths(output: Path, diagnostics: bool) -> dict[str, Path]:
     if diagnostics:
         paths.update({
             name: output.with_name(f"{output.stem}.{name}{output.suffix}")
-            for name in ("original", "structure", "macro", "meso", "micro", "recipe", "mask_resolved", "boundary")
+            for name in ("original", "structure", "macro", "meso", "micro", "recipe", "mask_resolved", "boundary", "source_uniformity", "patch_identity", "warped_meso", "forest_motif", "adaptive_strength")
         })
     paths["combined"] = output
     return paths
@@ -214,7 +216,7 @@ def _run_real_preview(args: argparse.Namespace) -> int:
     paths = _real_preview_paths(args.output, args.diagnostics)
     safe_paths = {name: safe_output_path(path, OUTPUT_ROOT, inputs) for name, path in paths.items()}
     request = PreviewRequest(args.x, args.y, args.width_m, args.height_m, args.meters_per_pixel, args.tile_size)
-    result = render_real_preview(preset, request, variant=args.variant, tb_compat=args.tb_compat)
+    result = render_real_preview(preset, request, variant=args.variant, tb_compat=args.tb_compat, art_pass=args.art_pass)
     layers = {
         "original": result.original,
         "structure": result.structure,
@@ -224,6 +226,11 @@ def _run_real_preview(args: argparse.Namespace) -> int:
         "recipe": result.recipe,
         "mask_resolved": result.mask_resolved,
         "boundary": result.boundary,
+        "source_uniformity": scalar_field_display(result.source_uniformity),
+        "patch_identity": scalar_field_display(result.patch_identity.astype("float32"), maximum=2.0),
+        "warped_meso": frequency_component_display(result.warped_meso[:, :, None].repeat(3, axis=2), gain=1.0),
+        "forest_motif": frequency_component_display(result.forest_motif[:, :, None].repeat(3, axis=2), gain=1.0),
+        "adaptive_strength": scalar_field_display(result.adaptive_strength, maximum=preset.art_pass.adaptive_max_multiplier),
         "combined": result.combined,
     }
     for name, path in safe_paths.items():
@@ -250,6 +257,7 @@ def _run_real_preview(args: argparse.Namespace) -> int:
                     "world_origin": "lower-left; output rows are top-down raster order",
                 },
                 "variant": result.variant,
+                "art_pass": bool(args.art_pass),
                 "mask_mode": result.mask_mode,
                 "height_context_pixel_counts": result.context_counts,
                 "inputs": {name: str(preset.inputs[name]) for name in ("satellite", "mask")},

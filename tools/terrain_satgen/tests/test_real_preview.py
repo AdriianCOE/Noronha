@@ -24,11 +24,13 @@ from terrainsat.real_preview import (
     RealPreviewError,
     _frequency_components,
     _height_context,
+    _source_uniformity,
     frequency_component_display,
     load_real_preview_preset,
     render_real_preview,
     write_bmp_atomic,
 )
+from terrainsat.procedural import anisotropic_bands, coherent_patch_field, warped_coordinates
 from terrainsat.reference_analysis import image_statistics, local_roi_statistics
 
 
@@ -230,6 +232,54 @@ class RealPreviewTests(unittest.TestCase):
         self.assertTrue(np.array_equal(first.meso, second.meso))
         self.assertTrue(np.array_equal(first.micro, second.micro))
 
+    def test_art_pass_is_deterministic_tiled_safe_and_crop_consistent(self) -> None:
+        full = render_real_preview(self.preset, request(tile=64), variant="balanced", tb_compat=True, art_pass=True)
+        tiled = render_real_preview(self.preset, request(tile=5), variant="balanced", tb_compat=True, art_pass=True)
+        crop = render_real_preview(self.preset, request(x=8, y=8, width=12, height=12, tile=5), variant="balanced", tb_compat=True, art_pass=True)
+        self.assertTrue(np.array_equal(full.combined, tiled.combined))
+        self.assertTrue(np.array_equal(full.patch_identity, tiled.patch_identity))
+        self.assertTrue(np.array_equal(full.combined[12:24, 8:20], crop.combined))
+
+    def test_world_space_patch_and_warp_are_deterministic_without_tile_grid(self) -> None:
+        xs, ys = np.arange(32, dtype=np.float32) + 0.5, np.arange(32, dtype=np.float32) + 0.5
+        patch_one, identity_one = coherent_patch_field(xs, ys, patch_scale_m=12, warp_scale_m=24, warp_strength_m=3, seed=123)
+        patch_two, identity_two = coherent_patch_field(xs, ys, patch_scale_m=12, warp_scale_m=24, warp_strength_m=3, seed=123)
+        warped_one = warped_coordinates(xs, ys, scale_m=24, strength_m=3, seed=123)
+        warped_two = warped_coordinates(xs, ys, scale_m=24, strength_m=3, seed=123)
+        self.assertTrue(np.array_equal(patch_one, patch_two))
+        self.assertTrue(np.array_equal(identity_one, identity_two))
+        self.assertTrue(all(np.array_equal(left, right) for left, right in zip(warped_one, warped_two)))
+        self.assertGreater(len(np.unique(identity_one)), 1)
+
+    def test_adaptive_strength_favors_uniform_source_without_becoming_zero(self) -> None:
+        uniform = np.full((16, 16, 3), 100, dtype=np.uint8)
+        detailed = uniform.copy()
+        detailed[::2, ::2] = 20
+        uniform_path, detailed_path = self.root / "uniform.bmp", self.root / "detailed.bmp"
+        Image.fromarray(uniform, "RGB").save(uniform_path)
+        Image.fromarray(detailed, "RGB").save(detailed_path)
+        uniformity_flat, strength_flat = _source_uniformity(uniform_path, (0, 0, 16, 16), uniform, 2, self.preset.art_pass)
+        uniformity_detail, strength_detail = _source_uniformity(detailed_path, (0, 0, 16, 16), detailed, 2, self.preset.art_pass)
+        self.assertGreater(uniformity_flat.mean(), uniformity_detail.mean())
+        self.assertGreater(strength_flat.mean(), strength_detail.mean())
+        self.assertGreater(strength_detail.min(), 0.0)
+
+    def test_art_pass_keeps_water_protection_and_default_anisotropy_is_a_no_op(self) -> None:
+        before = tuple(sha256_file(self.preset.inputs[name]) for name in ("height", "satellite", "mask"))
+        result = render_real_preview(self.preset, request(), variant="authored", tb_compat=True, art_pass=True)
+        water_delta = np.abs(result.combined[:8].astype(np.int16) - result.original[:8].astype(np.int16)).mean()
+        self.assertLessEqual(water_delta, 1.5)
+        bands = anisotropic_bands(np.arange(8, dtype=np.float32), np.arange(8, dtype=np.float32), scale_m=12, strength=0.0)
+        self.assertEqual(np.count_nonzero(bands), 0)
+        self.assertEqual(before, tuple(sha256_file(self.preset.inputs[name]) for name in ("height", "satellite", "mask")))
+
+    def test_noronha_recipe_configuration_distinguishes_forest_grass_and_concrete(self) -> None:
+        production = load_real_preview_preset(Path(__file__).resolve().parents[1] / "presets" / "noronha.toml")
+        grass, forest, concrete = (production.recipes[name] for name in ("en_grass2", "en_forest_con", "cp_concrete2"))
+        self.assertNotEqual((forest.patch_strength, forest.motif_strength), (grass.patch_strength, grass.motif_strength))
+        self.assertLess(concrete.patch_strength, grass.patch_strength)
+        self.assertLess(concrete.motif_strength, forest.motif_strength)
+
     def test_feathering_is_present_and_zero_width_disables_it(self) -> None:
         result = render_real_preview(self.preset, request(), variant="balanced", tb_compat=True)
         self.assertGreater(np.count_nonzero(result.boundary), 0)
@@ -327,7 +377,7 @@ class RealPreviewCliTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.preset = write_fixture(Path(self.temporary.name))
         self.output = Path("test-real-preview.bmp")
-        for suffix in ("", ".original", ".structure", ".recipe", ".mask_resolved", ".boundary"):
+        for suffix in ("", ".original", ".structure", ".recipe", ".mask_resolved", ".boundary", ".source_uniformity", ".patch_identity", ".warped_meso", ".forest_motif", ".adaptive_strength"):
             self.addCleanup(lambda suffix=suffix: (OUTPUT_ROOT / f"test-real-preview{suffix}.bmp").unlink(missing_ok=True))
 
     def test_output_stays_in_out_and_debug_failure_hides_combined(self) -> None:
