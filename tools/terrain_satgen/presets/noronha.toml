@@ -28,65 +28,108 @@ actual_shared_overlap_px = 32
 tiles_per_row = 22
 material_limit = 4
 
-# Real previews remain read-only regional experiments. These recipes are not a
-# Terrain Builder layer configuration and never rewrite the source mask.
+# Real previews remain read-only regional experiments. Recipes modulate the
+# source satellite; they are not a Terrain Builder layer configuration and
+# never rewrite the source mask.
 [real_preview]
-world_seed = "noronha-real-preview-v1"
+world_seed = "noronha-real-preview-v31"
 structure_blur_radius_px = 12
 
 [real_preview.variants.subtle]
-structure_weight = 0.55
-detail_weight = 0.35
-recipe_weight = 0.10
+detail_preservation = 0.88
+modulation_strength = 0.25
 
 [real_preview.variants.balanced]
-structure_weight = 0.45
-detail_weight = 0.15
-recipe_weight = 0.40
+detail_preservation = 0.72
+modulation_strength = 0.55
 
 [real_preview.variants.authored]
-structure_weight = 0.32
-detail_weight = 0.05
-recipe_weight = 0.63
+detail_preservation = 0.40
+modulation_strength = 0.88
+
+# The Mapframe lower-left and ASC origins are the confirmed ground truth.
+# The source distribution has water concentrated around -10 m; the 4 m band
+# avoids silently treating an arbitrary 0 m sample as the whole coast rule.
+[real_preview.height_context]
+world_x_origin_m = 200000.0
+world_y_origin_m = 0.0
+water_level_m = -2.0
+land_level_m = 2.0
+water_original_preservation = 0.92
+coast_original_preservation = 0.58
+water_modulation_cap = 0.02
+coast_modulation_cap = 0.10
 
 [real_preview.recipes.en_grass2]
-base_rgb = [91, 112, 57]
-macro_strength = 25
-medium_strength = 16
-local_strength = 5
-blend_strength = 0.78
+brightness_offset = -0.018
+saturation_adjustment = 0.025
+warmth_bias = 0.008
+channel_bias = [0.002, 0.000, -0.002]
+macro_strength = 0.075
+medium_strength = 0.040
+local_strength = 0.010
+preservation_strength = 0.62
+feather_width_m = 18.0
 
 [real_preview.recipes.en_forest_con]
-base_rgb = [48, 76, 40]
-macro_strength = 20
-medium_strength = 13
-local_strength = 5
-blend_strength = 0.78
+brightness_offset = -0.030
+saturation_adjustment = -0.015
+warmth_bias = 0.004
+channel_bias = [-0.002, 0.003, -0.001]
+macro_strength = 0.055
+medium_strength = 0.035
+local_strength = 0.010
+preservation_strength = 0.64
+feather_width_m = 24.0
 
 [real_preview.recipes.en_soil]
-base_rgb = [125, 88, 58]
-macro_strength = 18
-medium_strength = 12
-local_strength = 4
-blend_strength = 0.75
+brightness_offset = -0.022
+saturation_adjustment = -0.008
+warmth_bias = 0.035
+channel_bias = [0.006, -0.002, -0.006]
+macro_strength = 0.060
+medium_strength = 0.035
+local_strength = 0.008
+preservation_strength = 0.60
+feather_width_m = 12.0
 
 [real_preview.recipes.en_stubble]
-base_rgb = [145, 132, 73]
-macro_strength = 21
-medium_strength = 14
-local_strength = 5
-blend_strength = 0.72
+brightness_offset = -0.010
+saturation_adjustment = -0.010
+warmth_bias = 0.025
+channel_bias = [0.004, 0.001, -0.005]
+macro_strength = 0.070
+medium_strength = 0.040
+local_strength = 0.010
+preservation_strength = 0.58
+feather_width_m = 12.0
 
 [real_preview.recipes.cp_gravel]
-base_rgb = [121, 114, 95]
-macro_strength = 12
-medium_strength = 9
-local_strength = 3
-blend_strength = 0.12
+brightness_offset = -0.012
+saturation_adjustment = -0.025
+warmth_bias = 0.010
+channel_bias = [0.002, 0.000, -0.002]
+macro_strength = 0.030
+medium_strength = 0.018
+local_strength = 0.004
+preservation_strength = 0.85
+feather_width_m = 3.0
 
 [real_preview.recipes.cp_concrete2]
-base_rgb = [108, 108, 102]
-macro_strength = 7
-medium_strength = 5
-local_strength = 2
-blend_strength = 0.65
+brightness_offset = -0.008
+saturation_adjustment = -0.030
+warmth_bias = 0.000
+channel_bias = [0.000, 0.000, 0.000]
+macro_strength = 0.015
+medium_strength = 0.010
+local_strength = 0.003
+preservation_strength = 0.78
+feather_width_m = 2.0
+
+# Minimal contextual exception discovered in the Porto crop. This does not
+# reinterpret or rewrite cp_gravel in the mask; it only protects water pixels.
+[real_preview.context_overrides.cp_gravel.water]
+preservation_strength = 0.995
+
+[real_preview.context_overrides.cp_gravel.coast_transition]
+preservation_strength = 0.96

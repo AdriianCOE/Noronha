@@ -199,3 +199,28 @@ READY_FOR_TB_REGEN / PROMOTION permanece **NO** pelos três segmentos acima do
 limite de quatro materiais e pelos paths persistidos/cacheados. Não gerar
 satellite, não alterar mask e não operar/salvar o Terrain Builder até revisão
 explícita desses gates de promoção.
+
+## Fase 3.1 — contexto visual read-only
+
+A calibração do preview não altera este ground truth nem amplia permissão no
+Terrain Builder. O renderer usa o Mapframe confirmado (`x=200000`, `y=0`) e a
+convenção ASC padrão de linhas north-to-south para amostrar altura em world
+coordinates: a coluna é `floor((200000 + world_x - xllcorner) / 10)` e a linha
+é `1023 - floor((world_y - yllcorner) / 10)`.
+
+O ASC medido possui mar dominante em aproximadamente `-10 m` e uma faixa de
+valores perto de zero. Para o preview, somente, o preset declara:
+
+~~~text
+WATER             height <= -2 m
+COAST_TRANSITION  -2 m < height < 2 m
+LAND              height >= 2 m
+~~~
+
+Isso não reclassifica a mask. Ele resolve o finding visual em que `cp_gravel`
+também ocorre no oceano: pixels `WATER` preservam fortemente o satellite e a
+modulação terrestre é limitada; `cp_gravel + LAND` conserva sua receita
+terrestre relativa. As transições entre surfaces recebem feather local limitado
+por recipe e por halo; a mask de entrada permanece byte-exata.
+
+`READY_FOR_TB_REGEN / PROMOTION = NO` continua inalterado.

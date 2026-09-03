@@ -69,7 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
     real_command.add_argument("--variant", choices=("original", "subtle", "balanced", "authored"), required=True)
     real_command.add_argument("--tb-compat", action="store_true", help="Activate only explicit mask aliases")
     real_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
-    real_command.add_argument("--diagnostics", action="store_true", help="Also write original, structure, recipe and mask-resolved diagnostics")
+    real_command.add_argument("--diagnostics", action="store_true", help="Also write original, structure, relative-recipe, mask and boundary diagnostics")
     reference_command = subcommands.add_parser("reference-analysis", help="Compare read-only local style references with generated previews")
     reference_command.add_argument("--reference", type=Path, action="append", required=True, help="Named local reference image; never copied")
     reference_command.add_argument("--image", type=Path, action="append", required=True, help="Generated BMP path relative to tools/terrain_satgen/out")
@@ -194,7 +194,7 @@ def _real_preview_paths(output: Path, diagnostics: bool) -> dict[str, Path]:
     if diagnostics:
         paths.update({
             name: output.with_name(f"{output.stem}.{name}{output.suffix}")
-            for name in ("original", "structure", "recipe", "mask_resolved")
+            for name in ("original", "structure", "recipe", "mask_resolved", "boundary")
         })
     paths["combined"] = output
     return paths
@@ -212,6 +212,7 @@ def _run_real_preview(args: argparse.Namespace) -> int:
         "structure": result.structure,
         "recipe": result.recipe,
         "mask_resolved": result.mask_resolved,
+        "boundary": result.boundary,
         "combined": result.combined,
     }
     for name, path in safe_paths.items():
@@ -239,6 +240,7 @@ def _run_real_preview(args: argparse.Namespace) -> int:
                 },
                 "variant": result.variant,
                 "mask_mode": result.mask_mode,
+                "height_context_pixel_counts": result.context_counts,
                 "inputs": {name: str(preset.inputs[name]) for name in ("satellite", "mask")},
             },
         )

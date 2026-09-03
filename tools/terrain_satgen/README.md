@@ -147,11 +147,19 @@ haloed Gaussian blur, and applies small world-space recipes per resolved
 surface. It never writes an input, runs Terrain Builder, generates layers or
 renders the full 10240 x 10240 map.
 
-`original` is a faithful satellite crop. `subtle`, `balanced`, and `authored`
+`original` is a faithful satellite-only crop; it does not require mask aliases
+or height context. `subtle`, `balanced`, and `authored`
 respectively reduce high-frequency photographic detail and increase the
-surface-recipe contribution. The compact recipe table in `presets/noronha.toml`
-controls the six currently observed surfaces; it is not a Terrain Builder
-configuration.
+surface-recipe contribution. In Phase 3.1 those recipes are **relative
+modulations** of the satellite (luminance, saturation, warmth and bounded
+world-space variation), not replacement RGB colours. They retain local source
+luminance and taper inside a bounded feather zone at material boundaries.
+
+The Noronha preset samples the authoritative ASC read-only using the confirmed
+Mapframe/ASC lower-left origin. It derives only `WATER`, `COAST_TRANSITION` and
+`LAND`; `cp_gravel` in water therefore preserves the original satellite instead
+of receiving a terrestrial treatment. This is preview context only: neither
+the ASC nor the mask is changed and it is not a Terrain Builder promotion rule.
 
 ```powershell
 python -m terrainsat real-preview --preset presets\noronha.toml `
@@ -163,13 +171,15 @@ The coordinate convention is the registered Terrain Builder world system: `x`
 and `y` are the crop's lower-left origin in metres and must align to its 1 m/px
 source grid. The renderer converts that lower-left Y convention to top-down
 image rows. Outputs are bounded to 2048² pixels and must be relative to `out/`.
-The blur reads a three-radius halo around each crop, so a nested regional crop
-matches the same pixels from its containing render. `STRICT_RGB` remains a
+The blur reads a three-radius halo around each crop. The bounded boundary
+feather reads a mask halo equal to its largest configured width. Thus a nested
+regional crop matches the same pixels from its containing render. `STRICT_RGB` remains a
 diagnostic option and correctly rejects Noronha's four off-by-one RGB values.
 `--diagnostics` also writes a small JSON sidecar that records the selected world
 region, variant and mask mode; it never records or writes source pixels. Its
 `mask_resolved` image is a flat, deterministic surface-class diagnostic, not a
-procedural recipe layer or a valid Terrain Builder mask.
+procedural recipe layer or a valid Terrain Builder mask. The optional `boundary`
+diagnostic shows only the renderer's feather zone; it is not a mask output.
 
 ### Local style references
 
