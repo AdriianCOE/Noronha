@@ -22,12 +22,14 @@ from terrainsat.real_preview import (
     LAND,
     WATER,
     RealPreviewError,
+    _frequency_components,
     _height_context,
+    frequency_component_display,
     load_real_preview_preset,
     render_real_preview,
     write_bmp_atomic,
 )
-from terrainsat.reference_analysis import image_statistics
+from terrainsat.reference_analysis import image_statistics, local_roi_statistics
 
 
 def write_fixture(root: Path) -> Path:
@@ -83,15 +85,22 @@ tile_rows = 8
 "11,20,30" = "grass"
 [real_preview]
 world_seed = "real-fixture"
-structure_blur_radius_px = 2
+structure_blur_radius_px = 4
+meso_blur_radius_px = 1
 [real_preview.variants.subtle]
-detail_preservation = 0.8
+macro_preservation = 1.0
+meso_preservation = 0.9
+micro_preservation = 0.8
 modulation_strength = 0.25
 [real_preview.variants.balanced]
-detail_preservation = 0.5
+macro_preservation = 1.0
+meso_preservation = 0.7
+micro_preservation = 0.5
 modulation_strength = 0.55
 [real_preview.variants.authored]
-detail_preservation = 0.2
+macro_preservation = 1.0
+meso_preservation = 0.4
+micro_preservation = 0.2
 modulation_strength = 0.9
 [real_preview.height_context]
 world_x_origin_m = 0
@@ -181,9 +190,45 @@ class RealPreviewTests(unittest.TestCase):
         self.assertTrue(np.all(np.diff(recipe_luminance) > 0))
 
     def test_zero_modulation_is_identity(self) -> None:
-        preset = self._reloaded({"detail_preservation = 0.5": "detail_preservation = 1.0", "modulation_strength = 0.55": "modulation_strength = 0.0"})
+        preset = self._reloaded({"modulation_strength = 0.55": "modulation_strength = 0.0", "micro_preservation = 0.5": "micro_preservation = 1.0", "meso_preservation = 0.7": "meso_preservation = 1.0"})
         result = render_real_preview(preset, request(), variant="balanced", tb_compat=True)
         self.assertTrue(np.array_equal(result.original, result.combined))
+
+    def test_frequency_decomposition_is_deterministic_and_recomposes_exactly(self) -> None:
+        original = np.asarray(Image.open(self.preset.inputs["satellite"]), dtype=np.uint8)
+        one = _frequency_components(self.preset.inputs["satellite"], (0, 0, 32, 32), macro_radius=4, meso_radius=1, original=original)
+        two = _frequency_components(self.preset.inputs["satellite"], (0, 0, 32, 32), macro_radius=4, meso_radius=1, original=original)
+        self.assertTrue(all(np.array_equal(left, right) for left, right in zip(one, two)))
+        macro, meso, micro = one
+        self.assertTrue(np.array_equal(macro.astype(np.float32) + meso + micro, original.astype(np.float32)))
+        self.assertGreater(np.count_nonzero(frequency_component_display(meso)), 0)
+
+    def test_more_meso_preservation_retains_intermediate_structure_without_restoring_micro(self) -> None:
+        lower = self._reloaded({"meso_preservation = 0.7": "meso_preservation = 0.0"})
+        higher = self._reloaded({"meso_preservation = 0.7": "meso_preservation = 1.0"})
+        low = render_real_preview(lower, request(), variant="balanced", tb_compat=True)
+        high = render_real_preview(higher, request(), variant="balanced", tb_compat=True)
+        # The same micro weight isolates the visual change to the meso band.
+        self.assertFalse(np.array_equal(low.combined, high.combined))
+        self.assertLess(
+            np.abs(high.combined.astype(np.int16) - high.original.astype(np.int16)).mean(),
+            np.abs(low.combined.astype(np.int16) - low.original.astype(np.int16)).mean(),
+        )
+
+    def test_micro_reduction_leaves_macro_component_unchanged(self) -> None:
+        muted = self._reloaded({"micro_preservation = 0.5": "micro_preservation = 0.0"})
+        preserved = self._reloaded({"micro_preservation = 0.5": "micro_preservation = 1.0"})
+        muted_result = render_real_preview(muted, request(), variant="balanced", tb_compat=True)
+        preserved_result = render_real_preview(preserved, request(), variant="balanced", tb_compat=True)
+        self.assertTrue(np.array_equal(muted_result.structure, preserved_result.structure))
+        self.assertFalse(np.array_equal(muted_result.combined, preserved_result.combined))
+
+    def test_same_preset_real_render_is_bit_identical(self) -> None:
+        first = render_real_preview(self.preset, request(), variant="balanced", tb_compat=True)
+        second = render_real_preview(self.preset, request(), variant="balanced", tb_compat=True)
+        self.assertTrue(np.array_equal(first.combined, second.combined))
+        self.assertTrue(np.array_equal(first.meso, second.meso))
+        self.assertTrue(np.array_equal(first.micro, second.micro))
 
     def test_feathering_is_present_and_zero_width_disables_it(self) -> None:
         result = render_real_preview(self.preset, request(), variant="balanced", tb_compat=True)
@@ -252,10 +297,28 @@ class RealPreviewTests(unittest.TestCase):
     def test_reference_statistics_are_derived_and_report_normalized_frequency_units(self) -> None:
         reference = self.root / "reference.png"
         Image.new("RGB", (16, 8), (10, 30, 50)).save(reference)
+        before = sha256_file(reference)
         result = image_statistics(reference)
         self.assertEqual(result["analysis_sample_size"], {"width": 16, "height": 8})
         self.assertEqual(result["frequency_units"], "normalized sample pixels; physical metres are not inferred")
         self.assertIn("high_frequency_mean_abs", result["statistics"])
+        self.assertIn("meso_variance", result["statistics"]["frequency"])
+        self.assertIn("edge_preservation_proxy", result["statistics"])
+        self.assertEqual(sha256_file(reference), before)
+
+    def test_local_roi_is_read_only_and_has_no_automatic_semantics(self) -> None:
+        reference = self.root / "reference.png"
+        Image.new("RGB", (16, 8), (10, 30, 50)).save(reference)
+        before = sha256_file(reference)
+        config = self.root / "local-rois.toml"
+        config.write_text(
+            f'''[livonia.author_named_test]\nsource = "{reference.as_posix()}"\nx = 2\ny = 1\nwidth = 8\nheight = 4\n''',
+            encoding="utf-8",
+        )
+        results = local_roi_statistics(config)
+        self.assertEqual(results[0]["roi_name"], "livonia.author_named_test")
+        self.assertEqual(results[0]["semantic_status"], "AUTHOR_NAMED_LOCAL_ROI; no automatic terrain classification")
+        self.assertEqual(sha256_file(reference), before)
 
 
 class RealPreviewCliTests(unittest.TestCase):

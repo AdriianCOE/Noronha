@@ -10,8 +10,14 @@ from pathlib import Path
 from .inspect import InspectionError, inspect_preset, load_preset, write_segment_diagnostics
 from .parsers import InputFormatError
 from .preview import PreviewError, PreviewRequest, display_layer, load_synthetic_preset, render_preview, write_bmp_atomic
-from .real_preview import RealPreviewError, load_real_preview_preset, render_real_preview, write_bmp_atomic as write_real_bmp_atomic
-from .reference_analysis import ReferenceAnalysisError, image_statistics
+from .real_preview import (
+    RealPreviewError,
+    frequency_component_display,
+    load_real_preview_preset,
+    render_real_preview,
+    write_bmp_atomic as write_real_bmp_atomic,
+)
+from .reference_analysis import ReferenceAnalysisError, image_statistics, local_roi_statistics
 from .safety import UnsafeOutputError, safe_output_path, write_json_atomic
 
 
@@ -69,11 +75,13 @@ def build_parser() -> argparse.ArgumentParser:
     real_command.add_argument("--variant", choices=("original", "subtle", "balanced", "authored"), required=True)
     real_command.add_argument("--tb-compat", action="store_true", help="Activate only explicit mask aliases")
     real_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
-    real_command.add_argument("--diagnostics", action="store_true", help="Also write original, structure, relative-recipe, mask and boundary diagnostics")
+    real_command.add_argument("--diagnostics", action="store_true", help="Also write original, macro/meso/micro, relative-recipe, mask and boundary diagnostics")
     reference_command = subcommands.add_parser("reference-analysis", help="Compare read-only local style references with generated previews")
     reference_command.add_argument("--reference", type=Path, action="append", required=True, help="Named local reference image; never copied")
     reference_command.add_argument("--image", type=Path, action="append", required=True, help="Generated BMP path relative to tools/terrain_satgen/out")
     reference_command.add_argument("--output", type=Path, default=Path("reference-analysis/report.json"), help="JSON path relative to tools/terrain_satgen/out")
+    reference_command.add_argument("--local-roi-config", type=Path, help="Optional TOML below out/ with local-only reference ROIs")
+    reference_command.add_argument("--image-meters-per-pixel", type=float, help="Known m/px for every generated --image; omitted means normalized pixels")
     return parser
 
 
@@ -194,7 +202,7 @@ def _real_preview_paths(output: Path, diagnostics: bool) -> dict[str, Path]:
     if diagnostics:
         paths.update({
             name: output.with_name(f"{output.stem}.{name}{output.suffix}")
-            for name in ("original", "structure", "recipe", "mask_resolved", "boundary")
+            for name in ("original", "structure", "macro", "meso", "micro", "recipe", "mask_resolved", "boundary")
         })
     paths["combined"] = output
     return paths
@@ -210,6 +218,9 @@ def _run_real_preview(args: argparse.Namespace) -> int:
     layers = {
         "original": result.original,
         "structure": result.structure,
+        "macro": result.structure,
+        "meso": frequency_component_display(result.meso),
+        "micro": frequency_component_display(result.micro),
         "recipe": result.recipe,
         "mask_resolved": result.mask_resolved,
         "boundary": result.boundary,
@@ -261,10 +272,17 @@ def _run_reference_analysis(args: argparse.Namespace) -> int:
     if missing:
         raise ReferenceAnalysisError("Generated images do not exist: " + ", ".join(missing))
     output = safe_output_path(args.output, OUTPUT_ROOT, [*references, *images])
+    roi_config = None
+    roi_results: list[dict[str, object]] = []
+    if args.local_roi_config is not None:
+        roi_config = safe_output_path(args.local_roi_config, OUTPUT_ROOT)
+        roi_results = local_roi_statistics(roi_config)
     report = {
         "contract": "REFERENCE_ONLY: local reference pixels are sampled for statistics and are never copied into Noronha outputs.",
+        "reference_roi_status": "LOCAL_ROIS_ANALYZED" if roi_config is not None else "GLOBAL_PROVISIONAL_NO_LOCAL_ROIS",
         "references": [image_statistics(path) for path in references],
-        "noronha_generated_images": [image_statistics(path) for path in images],
+        "reference_rois": roi_results,
+        "noronha_generated_images": [image_statistics(path, meters_per_pixel=args.image_meters_per_pixel) for path in images],
     }
     write_json_atomic(output, report)
     print(f"Reference analysis: {len(references)} references, {len(images)} generated images -> {output}")

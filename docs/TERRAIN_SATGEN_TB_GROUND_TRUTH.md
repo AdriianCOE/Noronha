@@ -224,3 +224,17 @@ terrestre relativa. As transições entre surfaces recebem feather local limitad
 por recipe e por halo; a mask de entrada permanece byte-exata.
 
 `READY_FOR_TB_REGEN / PROMOTION = NO` continua inalterado.
+
+## Fase 3.2 — calibração meso read-only
+
+A Fase 3.2 não altera os dados acima nem amplia os gates de Terrain Builder.
+Ela separa localmente o crop do satellite em macro, meso e micro por dois
+low-passes com halo e preserva o componente meso do satellite original com mais
+força no preview `balanced`. Os diagnósticos macro/meso/micro e as métricas de
+Chernarus/Livonia são somente artefatos em `tools/terrain_satgen/out/`; as
+referências locais e eventuais ROIs não entram no Git e não fornecem pixels,
+paleta ou geometria para Noronha.
+
+Assim, qualquer resultado desta fase continua `READ_ONLY_REGIONAL_PREVIEW` e
+`RUNTIME_VISUAL_REVIEW`; não constitui promoção para Terrain Builder, alteração
+de mask/satellite, ou autorização para Generate Layers.

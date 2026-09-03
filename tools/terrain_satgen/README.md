@@ -150,7 +150,13 @@ renders the full 10240 x 10240 map.
 `original` is a faithful satellite-only crop; it does not require mask aliases
 or height context. `subtle`, `balanced`, and `authored`
 respectively reduce high-frequency photographic detail and increase the
-surface-recipe contribution. In Phase 3.1 those recipes are **relative
+surface-recipe contribution. Since Phase 3.2, the source crop is decomposed
+with two haloed Gaussian low passes: `macro = blur(large)`,
+`meso = blur(small) - blur(large)`, and `micro = original - blur(small)`.
+Each variant has explicit preservation weights for those three components.
+`balanced` keeps macro fully, favors meso, and suppresses micro more strongly;
+it therefore preserves real paths, clearings and field breakup before adding
+any procedural variation. In Phase 3.1+ those recipes are **relative
 modulations** of the satellite (luminance, saturation, warmth and bounded
 world-space variation), not replacement RGB colours. They retain local source
 luminance and taper inside a bounded feather zone at material boundaries.
@@ -175,8 +181,9 @@ The blur reads a three-radius halo around each crop. The bounded boundary
 feather reads a mask halo equal to its largest configured width. Thus a nested
 regional crop matches the same pixels from its containing render. `STRICT_RGB` remains a
 diagnostic option and correctly rejects Noronha's four off-by-one RGB values.
-`--diagnostics` also writes a small JSON sidecar that records the selected world
-region, variant and mask mode; it never records or writes source pixels. Its
+`--diagnostics` also writes the macro, signed-meso and signed-micro diagnostics
+(the latter two are centred at neutral grey only for inspection), plus a small
+JSON sidecar that records the selected world region, variant and mask mode; it never records or writes source pixels. Its
 `mask_resolved` image is a flat, deterministic surface-class diagnostic, not a
 procedural recipe layer or a valid Terrain Builder mask. The optional `boundary`
 diagnostic shows only the renderer's feather zone; it is not a mask output.
@@ -194,9 +201,37 @@ python -m terrainsat reference-analysis `
   --image previews\field-original.bmp --image previews\field-balanced.bmp
 ```
 
-The bounded first pass records RGB/luminance/saturation distributions, local
-contrast, high-frequency amplitude, medium variance and macro variance. They
-are diagnostic comparisons, not a synthetic quality score or a palette source.
+The bounded analysis records RGB/luminance/saturation distributions, local
+contrast, clipping, an edge-persistence proxy, and deterministic
+macro/meso/micro energy bands. They are diagnostic comparisons, not a synthetic
+quality score or a palette source. Reference physical scale is never inferred.
+For confirmed Noronha 1 m/px outputs, pass `--image-meters-per-pixel 1` to also
+record the band radii in metres.
+
+Optional author-named reference ROIs can live only below the ignored `out/`
+directory, for example `out/reference-analysis/local-rois.toml`:
+
+```toml
+[livonia.rural_mixed]
+source = "P:/local/livonia-satmap.png"
+x = 100
+y = 200
+width = 1024
+height = 1024
+```
+
+They are read-only crops: neither the ROI paths, coordinates nor source pixels
+are versioned. The tool does no semantic classification; without this local
+file it marks global reference statistics as provisional.
+
+```powershell
+python -m terrainsat reference-analysis `
+  --reference P:\chernarus-satmap.png --reference P:\livonia-satmap.png `
+  --image previews-phase32\natural-balanced.bmp `
+  --image-meters-per-pixel 1 `
+  --local-roi-config reference-analysis\local-rois.toml `
+  --output reference-analysis\phase32.json
+```
 
 ## Scope
 

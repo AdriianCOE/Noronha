@@ -32,19 +32,30 @@ material_limit = 4
 # source satellite; they are not a Terrain Builder layer configuration and
 # never rewrite the source mask.
 [real_preview]
-world_seed = "noronha-real-preview-v31"
-structure_blur_radius_px = 12
+world_seed = "noronha-real-preview-v32"
+# The two low-passes define an explicit, local-pixel decomposition:
+# macro = blur(18 px), meso = blur(4 px) - blur(18 px), micro = original - blur(4 px).
+# Noronha renders are confirmed at 1 m/px; local references keep their own
+# metrics in normalized sample pixels unless their physical scale is proven.
+structure_blur_radius_px = 18
+meso_blur_radius_px = 4
 
 [real_preview.variants.subtle]
-detail_preservation = 0.88
+macro_preservation = 1.00
+meso_preservation = 0.92
+micro_preservation = 0.84
 modulation_strength = 0.25
 
 [real_preview.variants.balanced]
-detail_preservation = 0.72
+macro_preservation = 1.00
+meso_preservation = 0.89
+micro_preservation = 0.60
 modulation_strength = 0.55
 
 [real_preview.variants.authored]
-detail_preservation = 0.40
+macro_preservation = 1.00
+meso_preservation = 0.70
+micro_preservation = 0.28
 modulation_strength = 0.88
 
 # The Mapframe lower-left and ASC origins are the confirmed ground truth.

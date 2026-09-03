@@ -49,7 +49,9 @@ class Recipe:
 @dataclass(frozen=True)
 class Variant:
     name: str
-    detail_preservation: float
+    macro_preservation: float
+    meso_preservation: float
+    micro_preservation: float
     modulation_strength: float
 
 
@@ -78,12 +80,15 @@ class RealPreviewPreset:
     height_context: HeightContextConfig
     world_seed: str
     structure_blur_radius_px: int
+    meso_blur_radius_px: int
 
 
 @dataclass(frozen=True)
 class RealPreviewResult:
     original: np.ndarray
     structure: np.ndarray
+    meso: np.ndarray
+    micro: np.ndarray
     recipe: np.ndarray
     mask_resolved: np.ndarray
     boundary: np.ndarray
@@ -167,7 +172,10 @@ def load_real_preview_preset(path: Path) -> RealPreviewPreset:
     config = raw.get("real_preview")
     if not isinstance(config, dict):
         raise RealPreviewError("real-preview requires a [real_preview] table")
-    allowed = {"world_seed", "structure_blur_radius_px", "variants", "recipes", "height_context", "context_overrides"}
+    allowed = {
+        "world_seed", "structure_blur_radius_px", "meso_blur_radius_px", "variants",
+        "recipes", "height_context", "context_overrides",
+    }
     unexpected = sorted(set(config) - allowed)
     if unexpected:
         raise RealPreviewError("Unknown [real_preview] keys: " + ", ".join(unexpected))
@@ -178,9 +186,19 @@ def load_real_preview_preset(path: Path) -> RealPreviewPreset:
     variants: dict[str, Variant] = {}
     for name in ("subtle", "balanced", "authored"):
         item = variants_raw.get(name)
-        if not isinstance(item, dict) or set(item) != {"detail_preservation", "modulation_strength"}:
-            raise RealPreviewError(f"variant {name} must contain detail_preservation and modulation_strength")
-        variants[name] = Variant(name, _unit(item["detail_preservation"], label=f"variant {name} detail_preservation"), _unit(item["modulation_strength"], label=f"variant {name} modulation_strength"))
+        expected = {"macro_preservation", "meso_preservation", "micro_preservation", "modulation_strength"}
+        if not isinstance(item, dict) or set(item) != expected:
+            raise RealPreviewError(
+                f"variant {name} must contain macro_preservation, meso_preservation, "
+                "micro_preservation and modulation_strength"
+            )
+        variants[name] = Variant(
+            name,
+            _unit(item["macro_preservation"], label=f"variant {name} macro_preservation"),
+            _unit(item["meso_preservation"], label=f"variant {name} meso_preservation"),
+            _unit(item["micro_preservation"], label=f"variant {name} micro_preservation"),
+            _unit(item["modulation_strength"], label=f"variant {name} modulation_strength"),
+        )
     recipes = {name: _relative_recipe(name, item) for name, item in recipes_raw.items()}
     surfaces = parse_layers(Path(raw["inputs"]["layers"]))
     aliases = _color_aliases(raw["mask"], surfaces)
@@ -195,12 +213,17 @@ def load_real_preview_preset(path: Path) -> RealPreviewPreset:
             if context not in CONTEXT_NAMES or not isinstance(item, dict) or set(item) != {"preservation_strength"}:
                 raise RealPreviewError(f"context override {surface}.{context} supports only preservation_strength")
             context_preservation[(surface, context)] = _unit(item["preservation_strength"], label=f"context override {surface}.{context}")
+    structure_blur_radius_px = int(_number(config.get("structure_blur_radius_px", 12), label="structure_blur_radius_px", minimum=2, maximum=64))
+    meso_blur_radius_px = int(_number(config.get("meso_blur_radius_px", 4), label="meso_blur_radius_px", minimum=1, maximum=32))
+    if meso_blur_radius_px >= structure_blur_radius_px:
+        raise RealPreviewError("meso_blur_radius_px must be smaller than structure_blur_radius_px")
     return RealPreviewPreset(
         path=path, world_size_m=_world_size(raw["world"]["size_m"]), inputs=_input_paths(raw), aliases=aliases,
         surface_rgb={surface.rgb: surface.name for surface in surfaces}, recipes=recipes, variants=variants,
         context_preservation=context_preservation, height_context=_height_context_config(config.get("height_context")),
         world_seed=str(config.get("world_seed", "terrain-satgen-real-preview")),
-        structure_blur_radius_px=int(_number(config.get("structure_blur_radius_px", 12), label="structure_blur_radius_px", minimum=1, maximum=64)),
+        structure_blur_radius_px=structure_blur_radius_px,
+        meso_blur_radius_px=meso_blur_radius_px,
     )
 
 
@@ -246,6 +269,33 @@ def _structure_crop(path: Path, box: tuple[int, int, int, int], radius: int) -> 
             blurred = image.crop(expanded).convert("RGB").filter(ImageFilter.GaussianBlur(radius=radius))
             offset = (left - expanded[0], top - expanded[1])
             return np.asarray(blurred.crop((offset[0], offset[1], offset[0] + right - left, offset[1] + bottom - top)), dtype=np.uint8).copy()
+
+
+def _frequency_components(
+    path: Path,
+    box: tuple[int, int, int, int],
+    *,
+    macro_radius: int,
+    meso_radius: int,
+    original: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return a deterministic Laplacian-style macro/meso/micro split.
+
+    Both low passes are read with their own three-radius source halo.  This
+    keeps a nested crop and a tiled render byte-identical at their shared
+    pixels while avoiding a full-raster buffer.
+    """
+    macro = _structure_crop(path, box, macro_radius)
+    meso_lowpass = _structure_crop(path, box, meso_radius)
+    macro_float = macro.astype(np.float32)
+    meso = meso_lowpass.astype(np.float32) - macro_float
+    micro = original.astype(np.float32) - meso_lowpass.astype(np.float32)
+    return macro, meso, micro
+
+
+def frequency_component_display(component: np.ndarray, *, gain: float = 4.0) -> np.ndarray:
+    """Make a signed meso/micro component inspectable without changing data."""
+    return np.rint(np.clip(component * np.float32(gain) + 128.0, 0, 255)).astype(np.uint8)
 
 
 def _resolve_surfaces(preset: RealPreviewPreset, pixels: np.ndarray, *, tb_compat: bool) -> tuple[np.ndarray, list[tuple[int, int, int]]]:
@@ -407,14 +457,20 @@ def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, v
                 raise RealPreviewError("mask dimensions must match satellite dimensions")
             box, raster_size = _request_box(preset, request, satellite.size), satellite.size
     original = _open_rgb_crop(preset.inputs["satellite"], box)
-    structure = _structure_crop(preset.inputs["satellite"], box, preset.structure_blur_radius_px)
+    structure, meso, micro = _frequency_components(
+        preset.inputs["satellite"],
+        box,
+        macro_radius=preset.structure_blur_radius_px,
+        meso_radius=preset.meso_blur_radius_px,
+        original=original,
+    )
     # ``original`` is intentionally a pure satellite crop. It remains useful
     # even when STRICT_RGB is used to diagnose the mask separately, so it must
     # not require an alias resolution or an ASC context read.
     if variant == "original":
         empty = np.zeros_like(original)
         return RealPreviewResult(
-            original, structure, original.copy(), empty, empty, original.copy(), variant,
+            original, structure, meso, micro, original.copy(), empty, empty, original.copy(), variant,
             "TB_COMPAT" if tb_compat else "STRICT_RGB", {"water": 0, "coast_transition": 0, "land": 0},
         )
     max_feather = math.ceil(max(recipe.feather_width_m for recipe in preset.recipes.values()) / request.meters_per_pixel)
@@ -429,13 +485,21 @@ def render_real_preview(preset: RealPreviewPreset, request: PreviewRequest, *, v
     recipe, mask_resolved = _relative_recipe_layer(preset, original, indices, request, context, distance)
     boundary = _boundary_diagnostic(indices, distance, list(preset.recipes.values()), request)
     settings = preset.variants[variant]
-    frequency_base = structure.astype(np.float32) + (original.astype(np.float32) - structure.astype(np.float32)) * settings.detail_preservation
+    frequency_base = (
+        structure.astype(np.float32) * settings.macro_preservation
+        + meso * settings.meso_preservation
+        + micro * settings.micro_preservation
+    )
     combined_float = frequency_base + (recipe - original.astype(np.float32)) * settings.modulation_strength
     water, coast = context == WATER, context == COAST_TRANSITION
     combined_float[water] = original[water].astype(np.float32) * preset.height_context.water_original_preservation + combined_float[water] * (1.0 - preset.height_context.water_original_preservation)
     combined_float[coast] = original[coast].astype(np.float32) * preset.height_context.coast_original_preservation + combined_float[coast] * (1.0 - preset.height_context.coast_original_preservation)
     combined = np.rint(np.clip(combined_float, 0, 255)).astype(np.uint8)
-    return RealPreviewResult(original, structure, recipe.astype(np.uint8), mask_resolved, boundary, combined, variant, "TB_COMPAT" if tb_compat else "STRICT_RGB", {"water": int(np.count_nonzero(context == WATER)), "coast_transition": int(np.count_nonzero(context == COAST_TRANSITION)), "land": int(np.count_nonzero(context == LAND))})
+    return RealPreviewResult(
+        original, structure, meso, micro, recipe.astype(np.uint8), mask_resolved, boundary,
+        combined, variant, "TB_COMPAT" if tb_compat else "STRICT_RGB",
+        {"water": int(np.count_nonzero(context == WATER)), "coast_transition": int(np.count_nonzero(context == COAST_TRANSITION)), "land": int(np.count_nonzero(context == LAND))},
+    )
 
 
 def write_bmp_atomic(path: Path, pixels: np.ndarray) -> None:
