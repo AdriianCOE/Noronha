@@ -7,7 +7,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-from .inspect import InspectionError, inspect_preset, load_preset
+from .inspect import InspectionError, inspect_preset, load_preset, write_segment_diagnostics
 from .parsers import InputFormatError
 from .preview import PreviewError, PreviewRequest, display_layer, load_synthetic_preset, render_preview, write_bmp_atomic
 from .safety import UnsafeOutputError, safe_output_path, write_json_atomic
@@ -26,6 +26,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json-out",
         type=Path,
         help="Optional report path relative to tools/terrain_satgen/out",
+    )
+    inspect_command.add_argument(
+        "--tb-compat",
+        action="store_true",
+        help="Resolve only explicitly configured Terrain Builder mask aliases",
+    )
+    inspect_command.add_argument(
+        "--surface-segment-audit",
+        action="store_true",
+        help="Audit Terrain Builder surface windows using the recorded sampler model",
+    )
+    inspect_command.add_argument(
+        "--segment-diagnostics",
+        action="store_true",
+        help="Write read-only crops for failed TB-compatible surface segments",
     )
     preview_command = subcommands.add_parser("preview", help="Render a synthetic procedural preview")
     preview_command.add_argument("--preset", type=Path, required=True, help="Synthetic TOML preset path")
@@ -74,17 +89,42 @@ def _print_report(report: dict[str, object]) -> None:
         f"Mask scan tile: {scan['tile_rows']} rows, "
         f"~{scan['primary_tile_buffers_mib']:.2f} MiB primary RGB/packed buffers"
     )
+    compatibility = report["terrain_builder_compatibility"]  # type: ignore[assignment]
+    print(
+        f"Terrain Builder compatibility: {compatibility['mode']}; "
+        f"{compatibility['active_alias_count']}/{len(compatibility['configured_aliases'])} aliases active"
+    )
     for entry in report["mask_color_usage"]:  # type: ignore[union-attr]
         rgb = ",".join(str(value) for value in entry["rgb"])
-        suffix = f" -> {entry['surface']}" if entry["status"] == "exact" else (
-            f"; nearest {entry['nearest']['surface']} "
-            f"({','.join(str(value) for value in entry['nearest']['rgb'])}), "
-            f"distance={entry['nearest']['distance']:.3g}, diagnostic only"
-        )
+        if entry["status"] in {"exact", "explicit_alias"}:
+            suffix = f" -> {entry['surface']}"
+        else:
+            suffix = (
+                f"; nearest {entry['nearest']['surface']} "
+                f"({','.join(str(value) for value in entry['nearest']['rgb'])}), "
+                f"distance={entry['nearest']['distance']:.3g}, diagnostic only"
+            )
         print(
             f"  ({rgb}) {entry['pixel_count']} px ({entry['percentage']:.6f}%) "
             f"{entry['status']}{suffix}"
         )
+    audit = report["surface_segment_audit"]
+    if audit is not None:
+        print(
+            "Surface segment audit: "
+            f"{audit['tiles']['x']} x {audit['tiles']['y']} = {audit['tiles']['total']}; "
+            f"core={audit['core_stride_px']} px, border={audit['border_per_side_px']} px, "
+            f"shared overlap={audit['actual_shared_overlap_px']} px, limit={audit['material_limit']}"
+        )
+        print(
+            f"  pass={audit['pass_count']}, fail={audit['fail_count']}, "
+            f"unknown={audit['unknown_count']}, maximum={audit['maximum_material_count']}"
+        )
+        for segment in audit["worst_segments"][:8]:
+            print(
+                f"  worst tile ({segment['tile_x']},{segment['tile_y']}) "
+                f"{segment['bounds']} {segment['material_count']} {segment['status']}"
+            )
     vanilla = report["vanilla_paths"]  # type: ignore[assignment]
     print(
         f"Vanilla references: {vanilla['existing_refs']}/"
@@ -136,16 +176,30 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "preview":
             return _run_preview(args)
+        if args.segment_diagnostics and not args.tb_compat:
+            raise InspectionError("--segment-diagnostics requires --tb-compat")
         output_path: Path | None = None
+        inputs: list[Path] = []
         if args.json_out is not None:
             preset = load_preset(args.preset)
             inputs = [Path(preset["inputs"][name]) for name in ("layers", "height", "satellite", "mask")]
             output_path = safe_output_path(args.json_out, OUTPUT_ROOT, inputs)
-        report = inspect_preset(args.preset)
+        report = inspect_preset(
+            args.preset,
+            tb_compat=args.tb_compat,
+            surface_segment_audit=args.surface_segment_audit or args.segment_diagnostics,
+        )
         _print_report(report)
         if output_path is not None:
             write_json_atomic(output_path, report)
             print(f"JSON report: {output_path}")
+        if args.segment_diagnostics:
+            if not inputs:
+                preset = load_preset(args.preset)
+                inputs = [Path(preset["inputs"][name]) for name in ("layers", "height", "satellite", "mask")]
+            diagnostic_root = safe_output_path(Path("tb-segment-audit/report.json"), OUTPUT_ROOT, inputs).parent
+            diagnostics = write_segment_diagnostics(args.preset, report, diagnostic_root)
+            print(f"Segment diagnostics: {len(diagnostics['failed_tiles'])} tiles in {diagnostic_root}")
         return 1 if report["status"] == "FAIL" else 0
     except (OSError, InspectionError, InputFormatError, PreviewError, UnsafeOutputError, tomllib.TOMLDecodeError) as error:
         print(f"terrainsat: {error}", file=sys.stderr)

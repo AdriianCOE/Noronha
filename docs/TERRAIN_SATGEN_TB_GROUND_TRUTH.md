@@ -1,22 +1,19 @@
 # TerrainSatGen — Terrain Builder Ground Truth
 
-Fase 2.5 — auditoria e coleta manual pendente
+Fase 2.6 — Terrain Builder compatibility e surface tile audit
 Data: 2026-09-03
-Decisão: **NÃO PRONTO** para renderer real, aliases de mask ou Fase 3.
+Readiness: **READY_FOR_REAL_PREVIEW = NO** (`SECOND_LANDMARK_REQUIRED`)
 
-## Escopo e regra de evidência
+`READY_FOR_TB_REGEN / PROMOTION = NO` permanece um gate separado: ele exige
+regularização consciente dos paths persistidos e resolução manual dos segmentos
+com mais de quatro surfaces. Esses itens não bloqueiam o renderer real
+estritamente read-only.
 
-Este é o contrato de coleta para P:/Noronha_Workspace/terrain/noronha.tv4p.
-A inspeção foi somente de leitura: não abriu, salvou, atualizou ou reexportou o
-projeto Terrain Builder e não alterou WRP, navmesh, heightmap, mask, satellite
-nem outros rasters.
+## Contrato e baseline
 
-Texto legível do binário TV4P prova somente que uma configuração existe. Sem
-parser confiável, não prova valores, unidades, grid, tile, overlap, orientação
-ou origem. Todo campo MANUAL_TB_REQUIRED precisa ser copiado na UI do Terrain
-Builder, acompanhado de captura de tela.
-
-## Baseline preservado
+Esta fase leu os inputs e executou apenas o inspector read-only. Não abriu,
+salvou, atualizou ou reexportou o TV4P; não alterou WRP, navmesh, heightmap,
+satellite, mask, layers.cfg, Terrain Builder ou Noronha_Workspace.
 
 | Artefato autoritativo | SHA-256 baseline |
 | --- | --- |
@@ -26,168 +23,171 @@ Builder, acompanhado de captura de tela.
 | P:/Noronha_Workspace/assets-src/terrain/gtt_satmap.bmp | 1D2D37109DB1A6BFC825D1126FAB2F077CC93A5F5EA9E6E8BD0E54DFFCCB8107 |
 | P:/Noronha_Workspace/assets-src/terrain/gtt_mask_osm.bmp | DF3516A6C527BC5574DC0D2FF96BEC02AB9CED7BE8112BDB283FD15A09DFDC7B |
 
-O repositório começou em main...origin/main [ahead 2], após os checkpoints
-locais 4c9a8ba Add TerrainSatGen inspect MVP e
-5ef2022 Add synthetic TerrainSatGen preview core. O Noronha_Workspace já
-possuía alterações não relacionadas; elas estão fora deste escopo.
+## Evidência manual do Terrain Builder
 
-## Quatro RGB sem ground truth
+Os valores abaixo foram copiados manualmente da UI real do projeto Noronha.
 
-gtt_mask_osm.bmp é RGB, 10240 x 10240. Isso é coerente com mundo de
-10240 m x 10240 m e escala derivada de 1 m/pixel, mas não prova origem de
-pixel, direção de Y nem registro visual.
+| Domínio | Valor confirmado |
+| --- | --- |
+| Mapframe | UTM 31N; left-bottom Easting 200000.000, Northing 0.000; output root P:/Noronha |
+| Terrain | grid 1024 x 1024; cell 10.000 m; tamanho 10240.000 m |
+| Satellite/surface source | 10240 x 10240 px; 1.000000 m/px |
+| Satellite tile texture | 512 x 512 px |
+| Overlap | desired 16 px por lado; actual shared overlap 32 px; overlapped area 12.109% |
+| Segmento útil | stride 480 px; final sat grid 48 terrain cells; satellite segment 12 |
+| Grid | 22 tiles por linha; landgrid 256 m; wanted sat grid 49.600 cells |
+| Texture layer | 40.00 x 40.00 m |
+| Processing | export satellite texture, normal map e surface mask habilitados; modo 4 materials per cell |
+| layers.cfg ativo | P:/Noronha/source/layers.cfg |
 
-| RGB observado | Pixels | Layer vizinho em source/layers.cfg | Delta RGB | Estado |
-| --- | ---: | --- | --- | --- |
-| (255,175,23) | 88,775,026 | cp_gravel (255,175,22) | 1 no B | LIKELY_BUT_MANUAL_TB_REQUIRED |
-| (254,29,191) | 1,522,009 | en_soil (254,28,191) | 1 no G | LIKELY_BUT_MANUAL_TB_REQUIRED |
-| (251,227,38) | 284,945 | en_stubble (250,227,38) | 1 no R | LIKELY_BUT_MANUAL_TB_REQUIRED |
-| (87,86,86) | 2,558 | cp_concrete2 (86,86,86) | 1 no R | LIKELY_BUT_MANUAL_TB_REQUIRED |
+O left-bottom coincide com o ASC: xllcorner 200000 e yllcorner 0. UTM 31N é
+parte do contrato atual do projeto e não deve ser corrigido nesta fase.
 
-Há 90,584,538 pixels sem igualdade exata. A proximidade de um canal é uma
-hipótese forte de quantização/exportação, mas não foi encontrado alias ativo,
-log de importação ou exportador que prove equivalência. Não criar aliases, não
-normalizar a mask e não aceitar o vizinho como mapeamento confirmado.
+Os campos UV observados abaixo são evidência, não semântica inferida:
 
-## Projeto Terrain Builder e sampler
+~~~text
+gridInWSize=0.046875       wSegmentExtent=480.000000
+wSegment=480               wSegTex=512
+satTexU=0.937500           satGrid=480.000000
+satUA=0.001953             xOffset=16
+satOffU=0.031250           xBeg=0.000000
+satUB=0.031250             rangeZ=10240.000000
+zBeg=10240.000000          satVB=20.031250
+~~~
 
-Evidência segura:
+## Paths persistidos e reimportação
 
-- Projeto: P:/Noronha_Workspace/terrain/noronha.tv4p, 497,444 bytes; última
-  gravação observada em 2026-09-02 20:46:58.
-- O arquivo persiste paths antigos para P:/Noronha/source/QGIS/gtt_satmap.bmp,
-  gtt_mask_osm.bmp e gtt_terrain_normals.bmp; não são os bitmaps de origem
-  atuais.
-- Há rótulos binários como imageryResolution, satGridCellSize, texcell,
-  texoverlap e texture layer, sem parser confiável para associar bytes a
-  valores e unidades.
+Layers Manager apresenta o ASC em P:/Noronha/source/QGIS/gtt_heightmap.asc e
+os BMP antigos em P:/Noronha/source/QGIS/gtt_mask_osm.bmp,
+gtt_terrain_normals.bmp e gtt_satmap.bmp. Os BMP autoritativos atuais vivem em
+P:/Noronha_Workspace/assets-src/terrain.
 
-| Campo | Valor offline | Estado |
-| --- | --- | --- |
-| Resolução de imagery/satellite | — | MANUAL_TB_REQUIRED |
-| Satellite grid: dimensão e célula | — | MANUAL_TB_REQUIRED |
-| Segmento/tile | — | MANUAL_TB_REQUIRED |
-| Overlap horizontal e vertical | — | MANUAL_TB_REQUIRED |
-| Texture layer size | — | MANUAL_TB_REQUIRED |
-| Origem, Y e pixel-center | — | MANUAL_TB_REQUIRED |
-| Raster satellite efetivamente associado | path antigo persistido | MANUAL_TB_REQUIRED |
-| Raster mask efetivamente associado | path antigo persistido | MANUAL_TB_REQUIRED |
-
-Não reapontar paths na coleta. Registrar se o Terrain Builder resolve arquivo
-por cache, path alternativo ou reporta ausência; capturar a mensagem.
+O projeto exibe raster persistido/cacheado apesar dos paths legados.
+RUNTIME/REIMPORT REPRODUCIBILITY = MANUAL_TB_REVIEW. Não reapontar esses paths
+nem salvar o projeto nesta fase.
 
 ## Registro espacial
 
-| Relação | Evidência atual | Estado | Checagem manual |
-| --- | --- | --- | --- |
-| Mundo | 10240 m x 10240 m | CONFIRMED_OFFLINE | Confirmar na UI. |
-| ASC | 1024 x 1024; xllcorner 200000, yllcorner 0, cellsize 10; X [200000,210240], Y [0,10240] | CONFIRMED_OFFLINE | Confirmar import/grid e origem. |
-| Satellite e mask | BMP RGB 10240 x 10240; 1 m/px derivado | dimensão confirmada; registro UNKNOWN | Confirmar escala, origem, Y e associação ativa. |
-| ASC contra BMP | dimensões físicas coerentes | LIKELY_BUT_MANUAL_TB_REQUIRED | Sobrepor e validar landmarks. |
-| Pixel center, borda e Y | não determinado | UNKNOWN_MANUAL_TB_REQUIRED | Registrar convenção efetiva. |
+As capturas de 2026-09-03 fornecem evidência manual para Aeroporto:
 
-Usar três landmarks e salvar uma captura por ponto que mostre coincidência de
-terreno, satellite e referência de posição:
+- o marcador cai na região esperada;
+- mata, vias, clareiras e construções vizinhas são coerentes no satellite;
+- o footprint de aeroporto aparece na mask;
+- a pista foi removida deliberadamente do satellite para não competir com
+  terrain/mask/objetos e não é mismatch.
 
-| Landmark | Posição X,Y | Critério |
-| --- | --- | --- |
-| Aeroporto | 5845.81, 5907.83 | Instalação/pista coincide com feição do satellite. |
-| Porto | 9021.95, 8296.21 | Costa/porto coincide com feição do satellite. |
-| Pico (Rocha Nega) | 6594.60, 7163.40 | Pico/relevo coincide entre heightmap e referência visual. |
+Aeroporto = SPATIAL_ALIGNMENT_STRONGLY_CONFIRMED.
 
-Aprovar somente quando os três coincidirem sem deslocamento sistemático. Se
-houver deslocamento, registrar magnitude, eixo e direção; não compensar por
-edição nesta fase.
-
-## en_deforested.rvmat
-
-**Classificação: LEGACY_BUT_PRESENT.**
-
-world/config.cpp inclui
-DZ\surfaces_bliss\data\terrain\en_deforested.rvmat em UsedTerrainMaterials; o
-arquivo existe em P:/DZ/surfaces_bliss/data/terrain/en_deforested.rvmat; porém
-não há entrada correspondente em source/layers.cfg, nem prova offline de cor da
-mask, layer do Terrain Builder ou tile atual que o use. Auditorias anteriores o
-descrevem como declaração legada a revisar no Terrain Builder.
-
-1. Localizar en_deforested.rvmat na lista funcional de materiais/surfaces usados
-   pelo projeto e capturar a lista completa.
-2. Verificar se uma layer ou associação de mask o seleciona; registrar nome, RGB
-   e área/tile, se a UI disponibilizar.
-3. Se não houver associação, registrar a ausência. Não removê-lo de
-   UsedTerrainMaterials e não adicioná-lo a layers.cfg nesta fase.
-
-## Checklist humano no Terrain Builder
-
-Nomes de painéis variam por versão; as ações são funcionais, não alegações sobre
-rótulos de UI.
-
-1. Abrir manualmente noronha.tv4p. Se houver prompt de migração, atualização ou
-   salvamento, cancelar e não gravar o projeto.
-2. Abrir propriedades de terreno/projeto e capturar tamanho, grade, célula e
-   parâmetros de importação do heightmap.
-3. Localizar imagery/satellite e copiar com captura: raster associado,
-   resolução, satellite grid, segmento/tile, overlap e texture layer size.
-   Anotar unidade e versão do Terrain Builder.
-4. Localizar mask/surfaces e capturar associações de cores e materiais. Registrar
-   a surface efetiva de (255,175,23), (254,29,191), (251,227,38) e (87,86,86).
-5. Capturar materiais usados e executar o checklist de en_deforested.
-6. Validar e capturar os três landmarks. Anotar deslocamento, inversão ou
-   espelhamento observado.
-7. Registrar tile e overlap reais no bloco abaixo; somente então executar o
-   gate de quatro surfaces.
-
-### Bloco de coleta
+O segundo landmark continua obrigatório: preferir Porto, usando coastline,
+estrada e construções com marcador visível. Até esse ponto:
 
 ~~~text
-Terrain Builder version:
-Imagery/satellite source actually resolved:
-Mask source actually resolved:
-Imagery resolution:
-Satellite grid dimensions / cell size:
-Segment/tile size:
-Overlap X / Y:
-Texture layer size:
-Origin / Y direction / pixel-center convention:
-RGB (255,175,23) ->
-RGB (254,29,191) ->
-RGB (251,227,38) ->
-RGB (87,86,86) ->
-en_deforested active association ->
-Landmark result (Aeroporto / Porto / Pico):
-Capture paths or identifiers:
+SECOND_LANDMARK_REQUIRED = YES
 ~~~
 
-## Gate: quatro surface types por tile
+Não inferir inversão de Y ou pixel-center apenas dos campos UV. O segundo ponto
+independente deve confirmar a transformação world/raster.
 
-Este é plano, não implementação. Executar somente após parâmetros reais e todos
-os mapeamentos de cor estarem confirmados.
+## Cores da mask e compatibilidade TB
 
-1. Converter cada pixel da mask para a surface confirmada pelo Terrain Builder;
-   cor sem confirmação é UNKNOWN e bloqueia o resultado.
-2. Derivar janela nuclear de cada tile do grid/tile size real e expandi-la pelo
-   overlap real, usando origem e convenção de bordas confirmadas pela UI.
-3. Para cada janela expandida, contar o conjunto de surface types distintos. O
-   overlap integra a janela e não pode ser ignorado.
-4. Emitir por tile: índice, caixa em coordenadas de mask/mundo, surfaces,
-   contagem e pixels UNKNOWN.
-5. Falhar se algum tile tiver mais de quatro types, algum pixel UNKNOWN ou
-   faltar parâmetro real do sampler.
+A mask possui seis RGB usados. Em STRICT_RGB, quatro não são igualdade byte a
+byte com a Legend. Em TB_COMPAT, somente aliases declarados no preset são
+ativados; não há nearest-color automático e nenhum pixel é reescrito.
 
-O relatório incluirá tiles de borda, cantos, os tiles dos três landmarks e o
-máximo global. Nenhuma correção da mask é parte deste gate.
+| RGB mask | Surface Legend | Estado TB_COMPAT | Evidência |
+| --- | --- | --- | --- |
+| (255,175,23) | cp_gravel (255,175,22) | explicit_alias | delta de um canal, candidato único |
+| (254,29,191) | en_soil (254,28,191) | explicit_alias | delta de um canal, candidato único |
+| (251,227,38) | en_stubble (250,227,38) | explicit_alias | delta de um canal, candidato único |
+| (87,86,86) | cp_concrete2 (86,86,86) | explicit_alias | MANUAL_SEMANTIC_CONFIRMATION = YES no aeroporto |
 
-## Readiness gate
+A confirmação visual do concrete veio da captura de mask no aeroporto: a área
+cinza escura representa o material concreto usado ali. Isso confirma a intenção
+semântica do alias, não uma necessidade de corrigir a mask.
 
-| Critério para renderer real/Fase 3 | Situação |
+Comportamento do inspector:
+
+| Modo | Resolução |
 | --- | --- |
-| Quatro RGB comprovados no Terrain Builder | Pendente |
-| Sampler real: grid, tile, overlap, layer | Pendente |
-| Paths de raster efetivamente resolvidos comprovados | Pendente |
-| Registro espacial aprovado por três landmarks | Pendente |
-| en_deforested classificado por associação real | Pendente |
-| Gate de quatro surfaces executável com parâmetros reais | Pendente |
+| STRICT_RGB, default | exact ou unknown; mantém os quatro unknown e falha pela política atual |
+| TB_COMPAT, opt-in | exact, explicit_alias ou unknown; aceita somente aliases do preset |
+| nearest | diagnóstico para unknown; nunca vira alias automático |
 
-**Resultado: NÃO PRONTO.** A próxima atividade permitida é a coleta humana
-acima, sem salvar o TV4P nem modificar asset autoritativo. Depois da coleta,
-reavaliar a Fase 2.5 antes de renderer real ou Fase 3.
+Aliases que apontam para surface inexistente, sombreiam RGB exato da Legend ou
+são duplicados/conflitantes são rejeitados. Contagem de materiais usa nomes de
+surface resolvidos, não RGB bruto.
+
+## TB_SEGMENT_WINDOW_MODEL
+
+O audit usa os samplers reais acima, com limites de pixel half-open:
+
+1. core start = n x 480;
+2. core end = min(start + 480, 10240);
+3. window = core expandido por 16 px em cada lado;
+4. window é recortada em 0..10240 somente na borda exterior.
+
+Portanto, 10240 / 480 resulta em 22 segmentos por eixo e 484 segmentos totais.
+O último core é parcial. Um tile interior mede 512 px por 512 px; bordas
+externas são menores por clipping. A área compartilhada de 32 px participa da
+contagem.
+
+## Resultado da auditoria real
+
+Comando executado:
+
+~~~text
+python -m terrainsat inspect --preset presets/noronha.toml --tb-compat --surface-segment-audit
+~~~
+
+| Modo | Segmentos | PASS | FAIL | UNKNOWN | Máximo |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| STRICT_RGB | 484 | 0 | 0 | 484 | 2 materiais resolvidos |
+| TB_COMPAT | 484 | 481 | 3 | 0 | 5 materiais |
+
+Tempo da auditoria TB_COMPAT: aproximadamente 4.02 s. A leitura é tiled por
+janela e não cria uma cópia integral adicional da mask de 10240 x 10240.
+
+Os três failures TB_COMPAT são reais sob o modelo confirmado:
+
+| Tile X,Y | Core bounds | Window bounds | Surfaces com overlap |
+| --- | --- | --- | --- |
+| 11,7 | [5280,3360,5760,3840) | [5264,3344,5776,3856) | cp_gravel, en_forest_con, en_grass2, en_soil, en_stubble |
+| 9,8 | [4320,3840,4800,4320) | [4304,3824,4816,4336) | cp_gravel, en_forest_con, en_grass2, en_soil, en_stubble |
+| 12,11 | [5760,5280,6240,5760) | [5744,5264,6256,5776) | cp_gravel, en_forest_con, en_grass2, en_soil, en_stubble |
+
+Nos tiles 11,7 e 9,8 as cinco surfaces já existem no core. No tile 12,11,
+en_stubble aparece por causa da janela com overlap: são 137 px (0,05226% da
+janela), fora do core. Ele é um `MANUAL_SIMPLIFICATION_CANDIDATE`, não uma
+autorização para editar a mask. Nos tiles 11,7 e 9,8, `cp_gravel` existe no
+core em área relevante e pode ser estrada, pátio ou geometria intencional; não
+removê-lo automaticamente. Os três locais exigem decisão de autoria/revisão
+manual posterior.
+
+## en_deforested
+
+en_deforested.rvmat = LEGACY_BUT_PRESENT e é não bloqueante para este preview.
+Ele existe em UsedTerrainMaterials e como RVMAT, mas não em source/layers.cfg e
+não há associação de mask comprovada. Não adicionar layer, inventar surface ou
+alterar a configuração nesta fase.
+
+## Readiness
+
+| Gate | Estado |
+| --- | --- |
+| Geometria terrain/satellite/mask e origem ASC | Resolvido |
+| Sampler TB, tile, overlap, texture layer e 4-material mode | Resolvido |
+| Paths legados/cache | `PRE_TB_PROMOTION_GATE`; regularizar conscientemente antes de reimportar/salvar no TB; não bloqueia preview read-only |
+| Aliases TB explícitos | Resolvido para TB_COMPAT; STRICT permanece disponível |
+| Airport alignment | SPATIAL_ALIGNMENT_STRONGLY_CONFIRMED |
+| Segundo landmark Porto | SECOND_LANDMARK_REQUIRED |
+| 4 materiais por segmento | `PRE_TB_PROMOTION_GATE`: 3 segmentos TB_COMPAT com 5 materiais; não bloqueia preview read-only |
+| en_deforested | LEGACY_BUT_PRESENT, não bloqueante |
+
+READY_FOR_REAL_PREVIEW permanece **NO** somente por
+`SECOND_LANDMARK_REQUIRED` (Porto). Após esse landmark independente confirmar o
+registro, o renderer real poderá operar exclusivamente em modo read-only.
+
+READY_FOR_TB_REGEN / PROMOTION permanece **NO** pelos três segmentos acima do
+limite de quatro materiais e pelos paths persistidos/cacheados. Não gerar
+satellite, não alterar mask e não operar/salvar o Terrain Builder até revisão
+explícita desses gates de promoção.

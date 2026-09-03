@@ -12,6 +12,18 @@ vanilla_root = "P:/"
 unknown_color_policy = "error"
 tile_rows = 256
 
-# Aliases remain intentionally disabled until MANUAL_TB_REVIEW confirms them.
-# [mask.color_aliases]
-# "255,175,23" = "cp_gravel"
+# Terrain Builder compatibility aliases are semantic declarations only. Strict
+# inspect remains the default; --tb-compat is required to activate them.
+[mask.color_aliases]
+"255,175,23" = "cp_gravel"
+"254,29,191" = "en_soil"
+"251,227,38" = "en_stubble"
+"87,86,86" = "cp_concrete2"
+
+[terrain_builder]
+tile_texture_px = 512
+core_stride_px = 480
+border_px = 16
+actual_shared_overlap_px = 32
+tiles_per_row = 22
+material_limit = 4

@@ -30,10 +30,10 @@ terrainsat inspect --preset presets\noronha.toml
 python -m terrainsat inspect --preset presets\noronha.toml
 ```
 
-The checked-in Noronha preset points to the audited read-only inputs. The
-current mask is expected to produce `FAIL` because four RGB values do not match
-the Legend exactly. Inspect completes the full report before returning exit
-code 1.
+The checked-in Noronha preset points to the audited read-only inputs. Default
+inspection is `STRICT_RGB`: it is expected to produce `FAIL` because four RGB
+values do not match the Legend byte-for-byte. Inspect completes the full report
+before returning exit code 1.
 
 An optional JSON manifest must be named relative to the tool-owned `out/`
 directory:
@@ -53,9 +53,44 @@ atomically.
 - `WARNING`: inspection completed with a non-blocking finding.
 - `FAIL`: a configured validation rule failed; the command returns exit code 1.
 
-Nearest RGB is diagnostic only. TerrainSatGen never treats it as an exact match,
-creates aliases automatically or modifies the mask. Noronha's preset contains
-no active aliases pending `MANUAL_TB_REVIEW`.
+Nearest RGB is diagnostic only. TerrainSatGen never creates aliases
+automatically or modifies the mask. `--tb-compat` activates only the explicit
+aliases declared by the selected preset; it reports them as `explicit_alias`.
+Exact Legend RGB always remains exact, and an alias cannot shadow an exact RGB
+or reference a missing surface.
+
+The Noronha preset records four Terrain Builder-compatible, off-by-one aliases.
+They describe the existing project semantics; they do not rewrite pixels. Use
+this explicit mode only when inspecting that known Terrain Builder contract:
+
+```powershell
+python -m terrainsat inspect --preset presets\noronha.toml --tb-compat
+```
+
+### Terrain Builder surface-segment audit
+
+`--surface-segment-audit` adds a read-only audit over the configured Terrain
+Builder sampler model. For Noronha it evaluates 22 x 22 windows from a 512 px
+tile, 480 px core stride, 16 px border per side and 32 px shared overlap. The
+last core is partial and exterior windows are clipped to the source image.
+Counts are distinct resolved surface materials, not raw RGB values. Unknown RGB
+produces `UNKNOWN`; more than four materials produces `FAIL`. The full segment
+records are available in optional JSON output.
+
+```powershell
+python -m terrainsat inspect --preset presets\noronha.toml --tb-compat --surface-segment-audit
+```
+
+`--segment-diagnostics` implies the segment audit and writes read-only QA crops
+for failing TB-compatible windows beneath `out/tb-segment-audit/`. Each tile
+gets the raw mask crop, a clearly labelled diagnostic surface image, a satellite
+context crop, an overlay of core/border/highlighted surface and a JSON report.
+Those images are evidence only; `mask_resolved.png` is never a valid Terrain
+Builder mask or a renderer output.
+
+```powershell
+python -m terrainsat inspect --preset presets\noronha.toml --tb-compat --segment-diagnostics
+```
 
 Every report retains `MANUAL_TB_REVIEW` and `RUNTIME_VISUAL_REVIEW`: offline
 inspection cannot prove Terrain Builder import behavior or DayZ visuals.
