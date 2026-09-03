@@ -176,7 +176,8 @@ python -m terrainsat real-preview --preset presets\noronha.toml `
 The coordinate convention is the registered Terrain Builder world system: `x`
 and `y` are the crop's lower-left origin in metres and must align to its 1 m/px
 source grid. The renderer converts that lower-left Y convention to top-down
-image rows. Outputs are bounded to 2048² pixels and must be relative to `out/`.
+image rows. Normal outputs are bounded to 2048² pixels and must be relative to
+`out/`.
 The blur reads a three-radius halo around each crop. The bounded boundary
 feather reads a mask halo equal to its largest configured width. Thus a nested
 regional crop matches the same pixels from its containing render. `STRICT_RGB` remains a
@@ -203,6 +204,21 @@ python -m terrainsat real-preview --preset presets\noronha.toml `
   --x 3600 --y 4500 --width-m 1024 --height-m 1024 --meters-per-pixel 1 `
   --variant balanced --tb-compat --art-pass --diagnostics `
   --output previews-phase33\natural-balanced-33.bmp
+```
+
+`--stream-output` is a Phase 3.3S opt-in path for a single larger combined BMP.
+It keeps the normal 2048² safety gate intact, raises only the streaming path to
+a 4096 x 4096 maximum, renders 256 px world-space tiles with the existing halo
+model, and promotes the final BMP only after the temporary file validates. It
+does not support full-size diagnostics; use normal 1024/2048 diagnostic renders
+for macro/meso/micro inspection. The streaming report records tile count,
+elapsed time, input hashes and a bounded-memory classification.
+
+```powershell
+python -m terrainsat real-preview --preset presets\noronha.toml `
+  --x 3088 --y 3988 --width-m 4096 --height-m 4096 --meters-per-pixel 1 `
+  --tile-size 256 --variant balanced --tb-compat --art-pass `
+  --stream-output --output large-preview-4096-phase33\natural-balanced-33.bmp
 ```
 
 ### Local style references

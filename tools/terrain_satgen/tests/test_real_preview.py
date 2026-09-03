@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import contextlib
+from dataclasses import replace
 import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -20,14 +22,18 @@ from terrainsat.preview import PreviewRequest
 from terrainsat.real_preview import (
     COAST_TRANSITION,
     LAND,
+    NORMAL_MAX_REAL_PIXELS,
+    STREAMING_MAX_DIMENSION,
     WATER,
     RealPreviewError,
     _frequency_components,
     _height_context,
+    _request_box,
     _source_uniformity,
     frequency_component_display,
     load_real_preview_preset,
     render_real_preview,
+    stream_real_preview_to_bmp_atomic,
     write_bmp_atomic,
 )
 from terrainsat.procedural import anisotropic_bands, coherent_patch_field, warped_coordinates
@@ -344,6 +350,79 @@ class RealPreviewTests(unittest.TestCase):
                 write_bmp_atomic(target, np.zeros((2, 2, 3), dtype=np.uint8))
         self.assertFalse(target.exists())
 
+    def test_streaming_output_is_byte_identical_to_legacy_writer(self) -> None:
+        request_value = request(tile=8)
+        cases = (
+            ("original", False),
+            ("balanced", False),
+            ("balanced", True),
+        )
+        for variant, art_pass in cases:
+            with self.subTest(variant=variant, art_pass=art_pass):
+                legacy = self.root / f"legacy-{variant}-{art_pass}.bmp"
+                streamed = self.root / f"streamed-{variant}-{art_pass}.bmp"
+                reverse = self.root / f"reverse-{variant}-{art_pass}.bmp"
+                result = render_real_preview(self.preset, request_value, variant=variant, tb_compat=True, art_pass=art_pass)
+                write_bmp_atomic(legacy, result.combined)
+                report = stream_real_preview_to_bmp_atomic(
+                    streamed,
+                    self.preset,
+                    request_value,
+                    variant=variant,
+                    tb_compat=True,
+                    art_pass=art_pass,
+                )
+                stream_real_preview_to_bmp_atomic(
+                    reverse,
+                    self.preset,
+                    request_value,
+                    variant=variant,
+                    tb_compat=True,
+                    art_pass=art_pass,
+                    reverse_traversal=True,
+                )
+                self.assertEqual(legacy.read_bytes(), streamed.read_bytes())
+                self.assertEqual(streamed.read_bytes(), reverse.read_bytes())
+                self.assertEqual(report.memory_model["classification"], "BOUNDED")
+                if art_pass and variant != "original":
+                    self.assertIsNotNone(report.adaptive)
+
+    def test_streaming_failure_does_not_promote_partial_output(self) -> None:
+        target = self.root / "stream-failed.bmp"
+        previous = b"previous-final"
+        target.write_bytes(previous)
+        with self.assertRaisesRegex(RealPreviewError, "injected"):
+            stream_real_preview_to_bmp_atomic(
+                target,
+                self.preset,
+                request(tile=8),
+                variant="balanced",
+                tb_compat=True,
+                fail_after_tiles=1,
+            )
+        self.assertEqual(target.read_bytes(), previous)
+        self.assertFalse(any(target.parent.glob(f".{target.name}.*.tmp")))
+
+    def test_normal_and_streaming_limits_are_separate(self) -> None:
+        large = replace(self.preset, world_size_m=(5000.0, 5000.0))
+        with self.assertRaisesRegex(RealPreviewError, "safety limit"):
+            _request_box(large, PreviewRequest(0, 0, 2049, 2049, 1, 256), (5000, 5000))
+        box = _request_box(
+            large,
+            PreviewRequest(0, 0, STREAMING_MAX_DIMENSION, STREAMING_MAX_DIMENSION, 1, 256),
+            (5000, 5000),
+            allow_streaming=True,
+        )
+        self.assertEqual(box, (0, 904, STREAMING_MAX_DIMENSION, 5000))
+        with self.assertRaisesRegex(RealPreviewError, "stream-output exceeds"):
+            _request_box(
+                large,
+                PreviewRequest(0, 0, STREAMING_MAX_DIMENSION + 1, STREAMING_MAX_DIMENSION, 1, 256),
+                (5000, 5000),
+                allow_streaming=True,
+            )
+        self.assertEqual(NORMAL_MAX_REAL_PIXELS, 2048 * 2048)
+
     def test_reference_statistics_are_derived_and_report_normalized_frequency_units(self) -> None:
         reference = self.root / "reference.png"
         Image.new("RGB", (16, 8), (10, 30, 50)).save(reference)
@@ -377,8 +456,9 @@ class RealPreviewCliTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.preset = write_fixture(Path(self.temporary.name))
         self.output = Path("test-real-preview.bmp")
-        for suffix in ("", ".original", ".structure", ".recipe", ".mask_resolved", ".boundary", ".source_uniformity", ".patch_identity", ".warped_meso", ".forest_motif", ".adaptive_strength"):
+        for suffix in ("", ".original", ".structure", ".recipe", ".mask_resolved", ".boundary", ".source_uniformity", ".patch_identity", ".warped_meso", ".forest_motif", ".adaptive_strength", ".report"):
             self.addCleanup(lambda suffix=suffix: (OUTPUT_ROOT / f"test-real-preview{suffix}.bmp").unlink(missing_ok=True))
+        self.addCleanup(lambda: (OUTPUT_ROOT / "test-real-preview.report.json").unlink(missing_ok=True))
 
     def test_output_stays_in_out_and_debug_failure_hides_combined(self) -> None:
         with contextlib.redirect_stderr(io.StringIO()):
@@ -394,6 +474,29 @@ class RealPreviewCliTests(unittest.TestCase):
             status = main(["real-preview", "--preset", str(self.preset), "--x", "0", "--y", "0", "--width-m", "8", "--height-m", "8", "--meters-per-pixel", "1", "--variant", "balanced", "--tb-compat", "--output", str(self.output), "--diagnostics"])
         self.assertEqual(status, 2)
         self.assertFalse((OUTPUT_ROOT / self.output).exists())
+
+    def test_stream_output_is_explicit_and_combined_only(self) -> None:
+        with contextlib.redirect_stdout(io.StringIO()):
+            status = main([
+                "real-preview", "--preset", str(self.preset), "--x", "0", "--y", "0",
+                "--width-m", "16", "--height-m", "16", "--meters-per-pixel", "1",
+                "--variant", "balanced", "--tb-compat", "--stream-output", "--output", str(self.output),
+            ])
+        self.assertEqual(status, 0)
+        self.assertTrue((OUTPUT_ROOT / self.output).is_file())
+        manifest = OUTPUT_ROOT / "test-real-preview.report.json"
+        self.assertTrue(manifest.is_file())
+        report = json.loads(manifest.read_text(encoding="utf-8"))
+        self.assertIn("heightmap_sha_used", report)
+        self.assertFalse(report["heightmap_matches_committed_baseline"])
+        with contextlib.redirect_stderr(io.StringIO()):
+            diagnostics = main([
+                "real-preview", "--preset", str(self.preset), "--x", "0", "--y", "0",
+                "--width-m", "16", "--height-m", "16", "--meters-per-pixel", "1",
+                "--variant", "balanced", "--tb-compat", "--stream-output", "--diagnostics",
+                "--output", str(self.output),
+            ])
+        self.assertEqual(diagnostics, 2)
 
 
 if __name__ == "__main__":

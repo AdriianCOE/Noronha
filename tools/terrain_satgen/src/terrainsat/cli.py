@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import sys
 import tomllib
 from pathlib import Path
@@ -16,6 +17,7 @@ from .real_preview import (
     load_real_preview_preset,
     render_real_preview,
     scalar_field_display,
+    stream_real_preview_to_bmp_atomic,
     write_bmp_atomic as write_real_bmp_atomic,
 )
 from .reference_analysis import ReferenceAnalysisError, image_statistics, local_roi_statistics
@@ -24,6 +26,7 @@ from .safety import UnsafeOutputError, safe_output_path, write_json_atomic
 
 TOOL_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_ROOT = TOOL_ROOT / "out"
+COMMITTED_HEIGHTMAP_SHA256 = "832EC370CD9871688E25E0F1D7BF78E44E10F976D97739147B874FC441AA8A9E"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -76,6 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
     real_command.add_argument("--variant", choices=("original", "subtle", "balanced", "authored"), required=True)
     real_command.add_argument("--tb-compat", action="store_true", help="Activate only explicit mask aliases")
     real_command.add_argument("--art-pass", action="store_true", help="Enable the bounded Phase 3.3 material procedural art pass")
+    real_command.add_argument("--stream-output", action="store_true", help="Opt in to bounded-memory streaming output up to 4096 x 4096")
     real_command.add_argument("--output", type=Path, required=True, help="BMP path relative to tools/terrain_satgen/out")
     real_command.add_argument("--diagnostics", action="store_true", help="Also write original, macro/meso/micro, relative-recipe, mask and boundary diagnostics")
     reference_command = subcommands.add_parser("reference-analysis", help="Compare read-only local style references with generated previews")
@@ -216,6 +220,45 @@ def _run_real_preview(args: argparse.Namespace) -> int:
     paths = _real_preview_paths(args.output, args.diagnostics)
     safe_paths = {name: safe_output_path(path, OUTPUT_ROOT, inputs) for name, path in paths.items()}
     request = PreviewRequest(args.x, args.y, args.width_m, args.height_m, args.meters_per_pixel, args.tile_size)
+    if args.stream_output:
+        if args.diagnostics:
+            raise RealPreviewError("--stream-output writes only the combined BMP; omit --diagnostics")
+        report = stream_real_preview_to_bmp_atomic(
+            safe_paths["combined"],
+            preset,
+            request,
+            variant=args.variant,
+            tb_compat=args.tb_compat,
+            art_pass=args.art_pass,
+        )
+        manifest_path = safe_output_path(args.output.with_name(f"{args.output.stem}.report.json"), OUTPUT_ROOT, inputs)
+        write_json_atomic(
+            manifest_path,
+            {
+                "contract": "READ_ONLY_LARGE_STREAMING_PREVIEW",
+                "region": {
+                    "x_m": args.x,
+                    "y_m": args.y,
+                    "width_m": args.width_m,
+                    "height_m": args.height_m,
+                    "meters_per_pixel": args.meters_per_pixel,
+                    "world_origin": "lower-left; output rows are top-down raster order",
+                },
+                "variant": args.variant,
+                "art_pass": bool(args.art_pass),
+                "mask_mode": "TB_COMPAT" if args.tb_compat else "STRICT_RGB",
+                "heightmap_sha_used": report.input_hashes_after["height"],
+                "heightmap_matches_committed_baseline": report.input_hashes_after["height"] == COMMITTED_HEIGHTMAP_SHA256,
+                "streaming": asdict(report),
+            },
+        )
+        print(f"combined: {safe_paths['combined']}")
+        print(f"report: {manifest_path}")
+        print(
+            f"TerrainSatGen real preview streaming: {report.width} x {report.height} px; "
+            f"tiles={report.tile_count}; variant={args.variant}; inputs read-only"
+        )
+        return 0
     result = render_real_preview(preset, request, variant=args.variant, tb_compat=args.tb_compat, art_pass=args.art_pass)
     layers = {
         "original": result.original,
