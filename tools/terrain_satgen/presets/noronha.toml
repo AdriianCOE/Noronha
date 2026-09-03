@@ -1,0 +1,17 @@
+[world]
+size_m = 10240
+
+[inputs]
+layers = "P:/Noronha/source/layers.cfg"
+height = "P:/Noronha/source/QGIS/gtt_heightmap.asc"
+satellite = "P:/Noronha_Workspace/assets-src/terrain/gtt_satmap.bmp"
+mask = "P:/Noronha_Workspace/assets-src/terrain/gtt_mask_osm.bmp"
+vanilla_root = "P:/"
+
+[mask]
+unknown_color_policy = "error"
+tile_rows = 256
+
+# Aliases remain intentionally disabled until MANUAL_TB_REVIEW confirms them.
+# [mask.color_aliases]
+# "255,175,23" = "cp_gravel"
