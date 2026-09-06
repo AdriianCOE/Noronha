@@ -1,4 +1,7 @@
-# DayZ Tools build output
+# DayZ Tools build output & Asset formats
+*.png
+*.paa
+*.rvmat
 *.pbo
 *.pbo.*
 *.binarized
@@ -11,7 +14,5 @@ Desktop.ini
 __pycache__/
 *.py[cod]
 
-# Project Specific Ignores
-*.rvmat
-P:/Noronha/data/layers/
+# Locally regenerated Terrain Builder layer output. Keep source rasters and layers.cfg tracked.
 data/layers/
