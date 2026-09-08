@@ -1,21 +1,11 @@
 class Vila_Remedios
 {
 	name="Vila dos Remedios";
-	position[]={7798.26,7476.31};
+	position[]={7795.47,7603.69};
 	type="NameCityCapital";
 	
 	radiusA=500.00;
 	radiusB=450.00;
-	angle=0.000;
-};
-class Vila_Trinta
-{
-	name="Vila do Trinta";
-	position[]={8317.81,6973.91};
-	type="NameCity";
-	
-	radiusA=400.00;
-	radiusB=350.00;
 	angle=0.000;
 };
 class Vila_Floresta_Velha
@@ -118,16 +108,6 @@ class Vila_Militar_FAB
 	radiusB=300.00;
 	angle=0.000;
 };
-class Radar_Aeronautica
-{
-	name="Radar da Aeronautica";
-	position[]={8854.31,6826.84};
-	type="StrongpointArea";
-	
-	radiusA=300.00;
-	radiusB=250.00;
-	angle=0.000;
-};
 class Forte_Noronha
 {
 	name="Forte dos Remedios";
@@ -141,7 +121,7 @@ class Forte_Noronha
 class Porto
 {
 	name="Porto de Santo Antonio";
-	position[]={8912.96,8249.36};
+	position[]={8884.82,8289.43};
 	type="NameMarine";
 	
 	radiusA=300.00;
@@ -451,7 +431,7 @@ class Ilha_Sao_Jose
 class Porto_Secreto
 {
 	name="Porto Secreto";
-	position[]={3784.33,3944.64};
+	position[]={3777.56,3950.69};
 	type="NameMarine";
 	
 	radiusA=400.00;
