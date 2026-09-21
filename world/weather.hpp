@@ -11,7 +11,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0;
 					bright=0.1;
@@ -33,7 +33,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage10_Cumulus_en_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0.039999999;
 					bright=0.18000001;
@@ -55,7 +55,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage11_Cumulus_en_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0.079999998;
 					bright=0.23999999;
@@ -77,7 +77,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage12_Cumulus_en_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0.12;
 					bright=0.30000001;
@@ -99,7 +99,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage01_Transparent_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage13_Cumulus_en_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0.18000001;
 					bright=0.34;
@@ -121,7 +121,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\enoch\data\Sky_Stage10_Cirrus_en_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage14_Cumulus_en_sky.paa";
 					cloudClip=0.80000001;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.80000001;
 					alpha=0.23;
 					bright=0.36000001;
@@ -143,7 +143,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\enoch\data\Sky_Stage10_Cirrus_en_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage15_Cumulus_en_sky.paa";
 					cloudClip=0.75;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage01_ClearHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.75;
 					alpha=0.28;
 					bright=0.34;
@@ -165,7 +165,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\enoch\data\Sky_Stage10_Cirrus_en_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage16_Cumulus_en_sky.paa";
 					cloudClip=0.62;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage02_FoggyHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.62;
 					alpha=0.33000001;
 					bright=0.30000001;
@@ -187,7 +187,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\enoch\data\Sky_Stage10_Cirrus_en_sky.paa";
 					cloud="DZ\worlds\enoch\data\Cloud_Stage16_Cumulus_en_sky.paa";
 					cloudClip=0.44999999;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage02_FoggyHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.44999999;
 					alpha=0.38;
 					bright=0.25;
@@ -209,7 +209,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Cloud_Stage20_Altostratus_sky.paa";
 					cloud="DZ\worlds\chernarusplus\data\Cloud_Stage30_Nimbostratus_sky.paa";
 					cloudClip=0.22;
-					horizon="DZ\worlds\chernarusplus\data\Horizont_Stage02_FoggyHills_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0.22;
 					alpha=0.43000001;
 					bright=0.2;
@@ -231,7 +231,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Sky_Stage30_Stratocumulus_sky.paa";
 					cloud="DZ\worlds\chernarusplus\data\Cloud_Stage30_Nimbostratus_sky.paa";
 					cloudClip=0;
-					horizon="DZ\worlds\chernarusplus\data\Cloud_Stage00_Transparent_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0;
 					alpha=0.47999999;
 					bright=0.14;
@@ -253,7 +253,7 @@ class Weather: Weather
 					farCloud="DZ\worlds\chernarusplus\data\Sky_Stage30_Stratocumulus_sky.paa";
 					cloud="DZ\worlds\chernarusplus\data\Cloud_Stage31_Nimbostratus_sky.paa";
 					cloudClip=0;
-					horizon="DZ\worlds\chernarusplus\data\Cloud_Stage00_Transparent_sky.paa";
+					horizon="Noronha\world\data\noronha_horizon_neutral.paa";
 					horizonClip=0;
 					alpha=0.51999998;
 					bright=0.1;

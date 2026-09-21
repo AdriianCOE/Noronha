@@ -16,6 +16,7 @@ Este arquivo registra origem e status de procedencia dos assets usados ou planej
 | Area | Asset/fonte | Status | Observacao |
 |---|---|---|---|
 | world/data | texturas e materials vanilla referenciados pelo world | `VANILLA_REFERENCE` | revisar gradualmente dependencia visual de Enoch/Livonia |
+| world/data | `noronha_horizon_neutral.paa` | `VANILLA_REFERENCE` | cópia byte-a-byte de `DZ\\worlds\\chernarusplus\\data\\Cloud_Stage00_Transparent_sky.paa`, validada no A/B como horizonte neutro; removem-se somente os panoramas de relevo distante do Weather |
 | world/config.cpp | `DZ\\sounds\\environment\\ambients\\coast` | `VANILLA_REFERENCE` | referencia runtime vanilla para ambiência costeira |
 | sounds | `birds_seagull.ogg` | `REVIEW_REQUIRED` | registrar autor/origem/licenca antes de redistribuicao publica do source |
 | sounds | `birds-bemtevi.ogg` | `REVIEW_REQUIRED` | registrar autor/origem/licenca |
