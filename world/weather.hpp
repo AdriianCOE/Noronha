@@ -276,4 +276,61 @@ class Weather: Weather
 				Item4[]={12000,0.001,0.050000001,0,1};
 				UseDynamic=0;
 			};
+			class LightingNew: LightingNew
+			{
+				// Keep the full current DayZ lighting sequence inherited from CAWorld.
+				// These anchors only bias the interpolation toward Noronha's humid Atlantic light.
+				class C_Night: C_Night
+				{
+					ambient[]={0.026,0.048,0.075};
+					ambientCloud[]={0.026,0.048,0.075};
+					groundReflection[]={0.0045,0.008,0.013};
+					groundReflectionCloud[]={0.0045,0.008,0.013};
+					spaceIntensity=0.72;
+					atmosphereIntensity=0.28;
+					starsIntensity=0.075;
+				};
+				class C_Nautical3: C_Nautical3
+				{
+					ambient[]={0.11,0.21,0.32};
+					ambientCloud[]={0.11,0.21,0.32};
+					groundReflection[]={0.028,0.054,0.09};
+					groundReflectionCloud[]={0.028,0.054,0.09};
+					desiredLuminanceCoef=0.14;
+					desiredLuminanceCoefCloud=0.14;
+				};
+				class C_Day60: C_Day60
+				{
+					diffuse[]={{1.02,0.9,0.84},13.8};
+					diffuseCloud[]={{1.0,0.9,0.86},13.8};
+					ambient[]={{0.14,0.20,0.25},11.8};
+					ambientCloud[]={{0.13,0.19,0.24},11.8};
+					groundReflection[]={{0.12,0.19,0.25},7.8};
+					groundReflectionCloud[]={{0.11,0.18,0.24},7.8};
+					sky[]={{0.70,0.86,1.0},12.6};
+					skyAroundSun[]={{1.02,1.0,0.94},13.0};
+					desiredLuminanceCoef=0.70;
+					desiredLuminanceCoefCloud=0.68;
+				};
+				class O_Night: O_Night
+				{
+					ambient[]={0.03,0.047,0.07};
+					ambientCloud[]={0.03,0.047,0.07};
+					groundReflection[]={0.004,0.006,0.009};
+					groundReflectionCloud[]={0.004,0.006,0.009};
+					desiredLuminanceCoef=0.075;
+					desiredLuminanceCoefCloud=0.075;
+				};
+				class O_Day60: O_Day60
+				{
+					diffuse[]={{0.28,0.30,0.32},10.4};
+					diffuseCloud[]={{0.28,0.30,0.32},10.4};
+					ambient[]={{0.18,0.23,0.28},12.4};
+					ambientCloud[]={{0.18,0.23,0.28},12.4};
+					groundReflection[]={{0.18,0.23,0.28},8.4};
+					groundReflectionCloud[]={{0.18,0.23,0.28},8.4};
+					desiredLuminanceCoef=0.35;
+					desiredLuminanceCoefCloud=0.35;
+				};
+			};
 		};

@@ -60,8 +60,8 @@ class CustomMission: MissionServer
             {
                 GetGame().ObjectDelete(itemClothing); // Remove a camisa padrão
                 
-                string camisasTime[] = {"Noronha_Tshirt_Palmeiras", "Noronha_Tshirt_Corinthians", "Noronha_Tshirt_Flamengo"};
-                int rndCamisa = Math.RandomInt(0, 3);
+                string camisasTime[] = {"Noronha_Tshirt_Palmeiras", "Noronha_Tshirt_Corinthians", "Noronha_Tshirt_Flamengo", "Noronha_Tshirt_Sport"};
+                int rndCamisa = Math.RandomInt(0, 4);
                 
                 // Cria e veste a camisa sorteada
                 itemClothing = player.GetInventory().CreateAttachment(camisasTime[rndCamisa]);

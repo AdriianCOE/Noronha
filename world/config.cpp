@@ -70,6 +70,14 @@ class CfgWorlds
 				class Weather11;
 				class Weather12;
 			};
+			class LightingNew
+			{
+				class C_Night;
+				class C_Nautical3;
+				class C_Day60;
+				class O_Night;
+				class O_Day60;
+			};
 		};
 	};
 	class Noronha: CAWorld
@@ -94,16 +102,16 @@ class CfgWorlds
 		longitude=-32.419998;
 		mapDisplayNameKey="Guia de Noronha";
 		mapDescriptionKey="Um guia turistico antigo da ilha. Praias, trilhas e mirantes ainda estao marcados, mas muita coisa mudou desde que foi impresso.";
-		mapTextureClosed="dz\gear\navigation\data\map_enoch_co.paa";
-		mapTextureOpened="dz\structures_bliss\signs\tourist\data\karta_enoch_co.paa";
-		mapTextureLegend="dz\structures_bliss\signs\tourist\data\karta_enoch_side_co.paa";
+		mapTextureClosed="Noronha\world\data\map\map_noronha_co.paa";
+		mapTextureOpened="Noronha\world\data\map\karta_noronha_co.paa";
+		mapTextureLegend="Noronha\world\data\map\karta_noronha_side_co.paa";
 		userMapPath="";
 		oceanMaterial="dz\water\data\ocean_samplemap.emat";
 		oceanNiceMaterial="dz\water\data\ocean_nice_samplemap.emat";
 		oceanStormMaterial="dz\water\data\ocean_storm_samplemap.emat";
 		class OutsideTerrain
 		{
-			satellite="\DZ\rocks\Data\MainTextures\terrain\cp_gravel_co.paa";
+			satellite="Noronha\world\data\map\noronha_sand_co.paa";
 			enableTerrainSynth=0;
 			class Layers
 			{
@@ -363,21 +371,6 @@ class CfgWorlds
 				cost="(5 - (2 * houses)) * (1 - night) * (1 - rain) * (1 - sea) * (1 - windy)";
 				class Species
 				{
-					class FxButterflyBrown
-					{
-						probability="0.4 * (1 - hills)";
-						cost=1;
-					};
-					class FxButterflyWhite
-					{
-						probability="0.3 * trees";
-						cost=1;
-					};
-					class FxBee
-					{
-						probability="0.3 * (1 - sea)";
-						cost=1;
-					};
 				};
 			};
 			class BigInsectsAquatic
@@ -394,16 +387,6 @@ class CfgWorlds
 				cost="9 * night * (1 - rain) * (1 - sea)";
 				class Species
 				{
-					class FxCrickets1
-					{
-						probability="0.7 * (1 - sea)";
-						cost=1;
-					};
-					class FxCrickets2
-					{
-						probability="0.3 * trees";
-						cost=1;
-					};
 				};
 			};
 			class WindClutter

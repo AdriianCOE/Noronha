@@ -8,24 +8,14 @@ class Vila_Remedios
 	radiusB=450.00;
 	angle=0.000;
 };
-class Vila_Floresta_Velha
-{
-	name="Floresta Velha";
-	position[]={7575.78,7080.51};
-	type="NameVillage";
-	
-	radiusA=400.00;
-	radiusB=300.00;
-	angle=360.000;
-};
 class Vila_Floresta_Nova
 {
 	name="Floresta Nova";
-	position[]={7665.43,6748.52};
+	position[]={7605.68,6791.85};
 	type="NameVillage";
 	
-	radiusA=350.00;
-	radiusB=300.00;
+	radiusA=500.00;
+	radiusB=400.00;
 	angle=0.000;
 };
 class Vila_Mulungu
@@ -41,11 +31,11 @@ class Vila_Mulungu
 class Vila_Coria
 {
 	name="Coria";
-	position[]={5373.40,5851.26};
+	position[]={5372.20,5866.80};
 	type="NameVillage";
 	
-	radiusA=240.00;
-	radiusB=200.00;
+	radiusA=300.00;
+	radiusB=250.00;
 	angle=0.000;
 };
 class Vila_Conceicao
@@ -71,11 +61,11 @@ class Vila_Tres_Paus
 class Vila_Quixaba
 {
 	name="Quixaba";
-	position[]={4624.24,5900.96};
+	position[]={4619.96,5920.54};
 	type="NameVillage";
 	
-	radiusA=230.00;
-	radiusB=200.00;
+	radiusA=300.00;
+	radiusB=250.00;
 	angle=0.000;
 };
 class Vila_Boldro
@@ -91,21 +81,21 @@ class Vila_Boldro
 class Aeroporto
 {
 	name="Aeroporto de Noronha";
-	position[]={5841.99,5868.06};
+	position[]={5849.49,6042.61};
 	type="Airport";
 	
-	radiusA=300.00;
-	radiusB=240.00;
+	radiusA=600.00;
+	radiusB=500.00;
 	angle=0.000;
 };
 class Vila_Militar_FAB
 {
 	name="Base Aerea";
-	position[]={5969.60,5488.22};
+	position[]={5935.18,5498.93};
 	type="StrongpointArea";
 	
-	radiusA=350.00;
-	radiusB=300.00;
+	radiusA=450.00;
+	radiusB=400.00;
 	angle=0.000;
 };
 class Forte_Noronha
@@ -121,31 +111,11 @@ class Forte_Noronha
 class Porto
 {
 	name="Porto de Santo Antonio";
-	position[]={8884.82,8289.43};
+	position[]={8891.71,8281.78};
 	type="NameMarine";
 	
-	radiusA=300.00;
-	radiusB=250.00;
-	angle=0.000;
-};
-class Hospital_Noronha
-{
-	name="Hospital";
-	position[]={7600.00,7300.00};
-	type="NameLocal";
-	
-	radiusA=60.00;
-	radiusB=60.00;
-	angle=0.000;
-};
-class Centro_Visitantes
-{
-	name="Visitantes";
-	position[]={7200.00,7100.00};
-	type="NameLocal";
-	
-	radiusA=50.00;
-	radiusB=50.00;
+	radiusA=400.00;
+	radiusB=300.00;
 	angle=0.000;
 };
 class Praia_Cacimba
@@ -181,11 +151,11 @@ class Praia_Atalaia
 class Praia_Sueste
 {
 	name="Sueste";
-	position[]={6289.14,4827.86};
+	position[]={6286.75,4814.71};
 	type="NameLocal";
 	
-	radiusA=122.39;
-	radiusB=94.18;
+	radiusA=180.00;
+	radiusB=120.00;
 	angle=0.000;
 };
 class Praia_Leao
@@ -194,8 +164,8 @@ class Praia_Leao
 	position[]={4903.13,4431.01};
 	type="NameLocal";
 	
-	radiusA=191.23;
-	radiusB=147.15;
+	radiusA=230.00;
+	radiusB=200.00;
 	angle=0.000;
 };
 class Praia_Sancho
@@ -204,8 +174,8 @@ class Praia_Sancho
 	position[]={4159.94,6053.32};
 	type="NameLocal";
 	
-	radiusA=122.39;
-	radiusB=94.18;
+	radiusA=200.00;
+	radiusB=200.00;
 	angle=0.000;
 };
 class Praia_Americano
@@ -294,8 +264,8 @@ class Cemiterio_Quixaba
 	position[]={4700.00,5800.00};
 	type="NameLocal";
 	
-	radiusA=40.00;
-	radiusB=40.00;
+	radiusA=80.00;
+	radiusB=80.00;
 	angle=0.000;
 };
 class Rocha_Nega
@@ -354,8 +324,8 @@ class Ponta_Sapata
 	position[]={983.61,3734.55};
 	type="ViewPoint";
 	
-	radiusA=239.04;
-	radiusB=183.94;
+	radiusA=300.00;
+	radiusB=240.00;
 	angle=0.000;
 };
 class Buraco_Raquel
@@ -391,11 +361,11 @@ class Museu_Tubarao
 class Ilha_Meio
 {
 	name="Ilha do Meio";
-	position[]={9771.58,9924.72};
+	position[]={9789.51,9906.79};
 	type="NameLocal";
 	
-	radiusA=239.04;
-	radiusB=183.94;
+	radiusA=500.00;
+	radiusB=500.00;
 	angle=0.000;
 };
 class Ilha_Sela_Gineta
@@ -404,18 +374,18 @@ class Ilha_Sela_Gineta
 	position[]={9702.95,9394.66};
 	type="NameLocal";
 	
-	radiusA=122.39;
-	radiusB=94.18;
+	radiusA=280.00;
+	radiusB=280.00;
 	angle=0.000;
 };
 class Ilha_Rasa
 {
 	name="Ilha Rasa";
-	position[]={9368.55,9039.43};
+	position[]={9393.95,9045.41};
 	type="NameLocal";
 	
-	radiusA=97.91;
-	radiusB=75.34;
+	radiusA=450.00;
+	radiusB=350.00;
 	angle=0.000;
 };
 class Ilha_Sao_Jose
@@ -424,48 +394,48 @@ class Ilha_Sao_Jose
 	position[]={8844.17,9119.80};
 	type="NameLocal";
 	
-	radiusA=78.33;
-	radiusB=60.27;
+	radiusA=210.00;
+	radiusB=180.00;
 	angle=0.000;
 };
 class Porto_Secreto
 {
 	name="Porto Secreto";
-	position[]={3777.56,3950.69};
+	position[]={3703.07,3998.27};
 	type="NameMarine";
 	
-	radiusA=400.00;
-	radiusB=300.00;
+	radiusA=500.00;
+	radiusB=400.00;
 	angle=360.000;
 };
 class Base_Secreta
 {
 	name="Base Secreta";
-	position[]={3778.27,4501.00};
+	position[]={3740.03,4492.59};
 	type="StrongpointArea";
 	
-	radiusA=370.19;
-	radiusB=230.00;
+	radiusA=500.00;
+	radiusB=400.00;
 	angle=0.000;
 };
 class Usina_Eolica
 {
 	name="Usina Eolica";
-	position[]={2064.39,3764.77};
+	position[]={2074.91,3756.17};
 	type="Hill";
 	
-	radiusA=259.00;
-	radiusB=180.00;
+	radiusA=400.00;
+	radiusB=350.00;
 	angle=0.000;
 };
 class Estacao_TV
 {
 	name="Estacao de TV";
-	position[]={3649.16,4917.22};
+	position[]={3626.21,4916.26};
 	type="NameLocal";
 	
-	radiusA=200.00;
-	radiusB=180.00;
+	radiusA=300.00;
+	radiusB=250.00;
 	angle=0.000;
 };
 class Mansao
@@ -474,48 +444,48 @@ class Mansao
 	position[]={8397.25,7509.87};
 	type="NameLocal";
 	
-	radiusA=200.00;
-	radiusB=150.00;
+	radiusA=250.00;
+	radiusB=200.00;
 	angle=0.000;
 };
 class Acampamentos_Praia
 {
 	name="Acampamentos da Praia";
-	position[]={5886.60,5069.33};
+	position[]={5868.43,5071.24};
 	type="NameVillage";
 	
-	radiusA=250.00;
-	radiusB=200.00;
+	radiusA=280.00;
+	radiusB=220.00;
 	angle=0.000;
 };
 class Fazedinha_Interior
 {
 	name="Fazenda de Adra";
-	position[]={4466.32,5202.36};
+	position[]={4460.97,5228.37};
 	type="NameVillage";
 	
-	radiusA=189.54;
-	radiusB=118.71;
+	radiusA=210.00;
+	radiusB=190.00;
 	angle=0.000;
 };
 class Ultima_Fazenda
 {
 	name="Ultima Fazenda";
-	position[]={2556.72,3835.08};
+	position[]={2538.55,3834.12};
 	type="NameLocal";
 	
-	radiusA=200.00;
-	radiusB=150.00;
+	radiusA=300.00;
+	radiusB=200.00;
 	angle=0.000;
 };
 class Vila_Aeroporto
 {
 	name="Vila do Aeroporto";
-	position[]={6321.96,5723.61};
+	position[]={6311.20,5723.61};
 	type="NameVillage";
 	
-	radiusA=300.00;
-	radiusB=200.00;
+	radiusA=350.00;
+	radiusB=280.00;
 	angle=0.000;
 };
 class Vila_Menor_Boldro
@@ -526,5 +496,35 @@ class Vila_Menor_Boldro
 	
 	radiusA=151.63;
 	radiusB=94.97;
+	angle=0.000;
+};
+class Vila_Floresta_Velha
+{
+	name="Floresta Velha";
+	position[]={7478.75,7086.06};
+	type="NameVillage";
+	
+	radiusA=600.00;
+	radiusB=500.00;
+	angle=360.000;
+};
+class Vila_Trinta
+{
+	name="Vila do Trinta";
+	position[]={8217.09,7003.32};
+	type="NameCity";
+	
+	radiusA=500.00;
+	radiusB=400.00;
+	angle=0.000;
+};
+class Radar_Aeronautica
+{
+	name="Radar da Aeronautica";
+	position[]={8851.67,6793.96};
+	type="StrongpointArea";
+	
+	radiusA=250.00;
+	radiusB=250.00;
 	angle=0.000;
 };
