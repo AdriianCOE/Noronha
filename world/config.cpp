@@ -295,8 +295,8 @@ class CfgWorlds
 		class SecondaryAirports
 		{
 		};
-		midDetailTexture="DZ\worlds\enoch\data\enoch_middle_mco.paa";
-		terrainNormalTexture="DZ\worlds\enoch\data\enoch_global_nohq.paa";
+		midDetailTexture="Noronha\world\data\terrain\noronha_middle_mco.paa";
+		terrainNormalTexture="Noronha\world\data\terrain\noronha_global_nohq.paa";
 		soundMapAttenCoef=0.003;
 		class SoundMapValues
 		{

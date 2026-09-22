@@ -23,6 +23,8 @@ Este arquivo registra origem e status de procedencia dos assets usados ou planej
 | sounds | `cigarra-sound.ogg` | `REVIEW_REQUIRED` | registrar autor/origem/licenca |
 | items | addon `Noronha_Items` | `REVIEW_REQUIRED` por asset | repo separado; revisar PAA/modelos/logos individualmente antes de publicacao de source |
 | terrain | `world/Noronha.wrp` | `OWNED`/projeto | artefato autoral do mapa; fontes pesadas ficam no workspace privado |
+| terrain presentation | `world/data/terrain/noronha_middle_mco.paa` | `OWNED`/projeto | modulacao mineral neutra, DXT1; fontes editaveis `Noronha_Workspace/assets-src/terrain/noronha_middle_mco.{png,tga}`; SHA-256 PAA `320A586D...F417D9D20` |
+| terrain presentation | `world/data/terrain/noronha_global_nohq.paa` | `OWNED`/gerado | normal global DXT5 derivado matematicamente do ASC autoritativo de Noronha; fonte editavel `Noronha_Workspace/assets-src/terrain/noronha_global_nohq.png`; SHA-256 PAA `86C3303F...CDD0874E6` |
 | navmesh | `navmesh/navmesh.nm` | `OWNED`/gerado | gerado para Noronha; nao editar manualmente |
 
 ## Assets planejados
@@ -31,8 +33,6 @@ Este arquivo registra origem e status de procedencia dos assets usados ou planej
 |---|---|---|
 | mapa de mao aberto/fechado/legenda | `PLANNED` | criar arte propria e documentar fonte de qualquer elemento externo |
 | `envTexture` tropical | `PLANNED` | criar asset e testar no DayZ |
-| `global_nohq` proprio | `PLANNED` | gerar a partir do terrain de Noronha e validar visualmente |
-| `middle_mco` proprio | `PLANNED` | produzir asset especifico do mapa |
 | `outside_sat_co` proprio | `PLANNED` | criar horizonte/oceano coerente com ilha |
 | surfaces Noronha | `PLANNED` | texturas/materials com procedencia registrada |
 | vegetacao tropical custom | `PLANNED` | confirmar licenca/permissao de cada pack/modelo antes de repack |
