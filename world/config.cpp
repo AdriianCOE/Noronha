@@ -34,8 +34,8 @@ class CfgCharacterScenes
 	{
 		class loc1
 		{
-			target[]={5815.05,5825,54.29};
-			position[]={5815.05,5809.21,54.29};
+			target[]={5800.00,5806.00,54.29};
+			position[]={5794.301270,5798.638672,1.0};
 			fov=0.52359998;
 			date[]={2026,2,23,12,0};
 			overcast=0.050000001;
@@ -100,8 +100,8 @@ class CfgWorlds
 		mapSize=10240;
 		latitude=3.84;
 		longitude=-32.419998;
-		mapDisplayNameKey="Guia de Noronha";
-		mapDescriptionKey="Um guia turistico antigo da ilha. Praias, trilhas e mirantes ainda estao marcados, mas muita coisa mudou desde que foi impresso.";
+		mapDisplayNameKey="#STR_NORONHA_WORLD_MAP_NAME";
+		mapDescriptionKey="#STR_NORONHA_WORLD_MAP_DESCRIPTION";
 		mapTextureClosed="Noronha\world\data\map\map_noronha_co.paa";
 		mapTextureOpened="Noronha\world\data\map\karta_noronha_co.paa";
 		mapTextureLegend="Noronha\world\data\map\karta_noronha_side_co.paa";

@@ -1,0 +1,42 @@
+[
+  {
+    "m_Headline": "#STR_NORONHA_HINT_WATER_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_WATER_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_NAVIGATION_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_NAVIGATION_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_AIRPORT_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_AIRPORT_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_BLEEDING_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_BLEEDING_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_SCALE_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_SCALE_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_WEATHER_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_WEATHER_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_COVER_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_COVER_BODY",
+    "m_ImagePath": ""
+  },
+  {
+    "m_Headline": "#STR_NORONHA_HINT_PREPAREDNESS_TITLE",
+    "m_Description": "#STR_NORONHA_HINT_PREPAREDNESS_BODY",
+    "m_ImagePath": ""
+  }
+]
