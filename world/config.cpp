@@ -42,6 +42,36 @@ class CfgCharacterScenes
 			rain=0;
 			fog=0;
 		};
+		class loc2
+		{
+			target[]={6418.307,6273.395,59.332};
+			position[]={6418.6264,6270.9174,1.4807};
+			fov=0.61086524;
+			date[]={2026,2,23,8,15};
+			overcast=0.12;
+			rain=0;
+			fog=0.03;
+		};
+		class loc3
+		{
+			target[]={5517.502,6922.849,33.596};
+			position[]={5515.455,6921.7246,1.5237};
+			fov=0.61086524;
+			date[]={2026,2,23,13,20};
+			overcast=0.62;
+			rain=0.12;
+			fog=0.05;
+		};
+		class loc4
+		{
+			target[]={3809.538,4489.854,66.124};
+			position[]={3812.0600,4489.6621,1.5659};
+			fov=0.61086524;
+			date[]={2026,2,23,16,50};
+			overcast=0.28;
+			rain=0;
+			fog=0.04;
+		};
 	};
 };
 class CfgWorlds
@@ -88,9 +118,9 @@ class CfgWorlds
 		heightBlendingMode=1;
 		bicubicMode=1;
 		ceFiles="Noronha\ce";
-		icon="";
-		pictureMap="";
-		pictureShot="";
+		icon="Noronha\world\data\ui\noronha_world_icon_ca.paa";
+		pictureMap="Noronha\world\data\ui\noronha_world_picture_map_co.paa";
+		pictureShot="Noronha\world\data\ui\noronha_world_picture_shot_co.paa";
 		cutscenes[]=
 		{
 			"NoronhaIntro"
@@ -111,7 +141,7 @@ class CfgWorlds
 		oceanStormMaterial="dz\water\data\ocean_storm_samplemap.emat";
 		class OutsideTerrain
 		{
-			satellite="Noronha\world\data\map\noronha_sand_co.paa";
+			satellite="Noronha\world\data\map\noronha_outside_satellite_co.paa";
 			enableTerrainSynth=0;
 			class Layers
 			{
@@ -293,13 +323,13 @@ class CfgWorlds
 				range=100;
 			};
 		};
-		centerPosition[]={5120,5120,100};
-		seagullPos[]={5120,5120,150};
-		ilsPosition[]={5845.8101,5907.8301};
-		ilsDirection[]={0.70700002,0,-0.70700002};
-		ilsTaxiOff[]={5700,5820,5730,5850,5780,5880,5820,5907.8301,5845.8101,5907.8301};
-		ilsTaxiIn[]={5845.8101,5907.8301,5870,5930,5895,5960,5910,5990};
-		drawTaxiway=1;
+		centerPosition[]={6407.5,6068,100};
+		seagullPos[]={6407.5,6068,150};
+		ilsPosition[]={7340,6000};
+		ilsDirection[]={0.9973517,0,-0.0727291};
+		ilsTaxiOff[]={5475,6136,7340,6000};
+		ilsTaxiIn[]={7340,6000,5475,6136};
+		drawTaxiway=0;
 		class SecondaryAirports
 		{
 		};
