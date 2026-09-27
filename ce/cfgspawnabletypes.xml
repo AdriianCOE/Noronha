@@ -2596,6 +2596,12 @@
 			<item name="Mag_CMAG_30Rnd" chance="1.00" />
 		</attachments>
 	</type>
+	<type name="NW_IA2_556">
+		<damage min="0.3" max="0.7" />
+		<attachments chance="0.30">
+			<item name="Mag_STANAG_30Rnd" chance="1.00" />
+		</attachments>
+	</type>
 	<type name="M16A2">
 		<damage min="0.3" max="0.7" />
 		<attachments chance="0.30">
