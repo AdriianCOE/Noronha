@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class Noronha
+	class NW_World
 	{
 		units[]={};
 		weapons[]={};
@@ -21,7 +21,7 @@ class CfgPatches
 			"DZ_Worlds_Chernarusplus_World",
 			"DZ_Worlds_Enoch_Data",
 			"DZ_Sounds_Environment",
-			"Noronha_Sounds"
+			"NW_Sounds"
 		};
 		author="AdriianCOE";
 		name="Noronha";
@@ -275,7 +275,7 @@ class CfgWorlds
 				name="seagulls_ambient_noronha";
 				sound[]=
 				{
-					"Noronha\sounds\birds_seagull",
+					"nw\sounds\birds_seagull",
 					1,
 					1
 				};
@@ -288,7 +288,7 @@ class CfgWorlds
 				name="bemtevi_ambient_noronha";
 				sound[]=
 				{
-					"Noronha\sounds\birds-bemtevi",
+					"nw\sounds\birds-bemtevi",
 					1,
 					1
 				};
@@ -301,7 +301,7 @@ class CfgWorlds
 				name="gralhas_ambient_noronha";
 				sound[]=
 				{
-					"Noronha\sounds\birds-gralhas",
+					"nw\sounds\birds-gralhas",
 					1,
 					1
 				};
@@ -314,7 +314,7 @@ class CfgWorlds
 				name="cigarra_ambient_noronha";
 				sound[]=
 				{
-					"Noronha\sounds\cigarra-sound",
+					"nw\sounds\cigarra-sound",
 					1,
 					1
 				};

@@ -60,7 +60,7 @@ class CustomMission: MissionServer
             {
                 GetGame().ObjectDelete(itemClothing); // Remove a camisa padrão
                 
-                string camisasTime[] = {"Noronha_Tshirt_Palmeiras", "Noronha_Tshirt_Corinthians", "Noronha_Tshirt_Flamengo", "Noronha_Tshirt_Sport"};
+                string camisasTime[] = {"NW_Tshirt_Palmeiras", "NW_Tshirt_Corinthians", "NW_Tshirt_Flamengo", "NW_Tshirt_Sport"};
                 int rndCamisa = Math.RandomInt(0, 4);
                 
                 // Cria e veste a camisa sorteada
@@ -96,7 +96,7 @@ class CustomMission: MissionServer
         }
 
         // Comida de Praia Aleatória - Atalho 3
-        string foodArray[] = { "TunaCan", "SardinesCan", "Noronha_Guarana" };
+        string foodArray[] = { "TunaCan", "SardinesCan", "NW_Drink_Guarana" };
         int rndFood = Math.RandomInt( 0, 3 );
         itemEnt = player.GetInventory().CreateInInventory( foodArray[rndFood] );
         if (itemEnt)

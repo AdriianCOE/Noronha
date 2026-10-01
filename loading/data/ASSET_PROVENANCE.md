@@ -28,6 +28,6 @@ The approved capture is not edited, resized, or overwritten. The v3 treatment is
   - SHA-256: `9F70A451EA5DA3DCC24BD0451D7B8BF9141D601F741B8B9E2FF572B43A265029`
 - UI atlas source: `P:\Noronha_Workspace\assets-src\loading\derived\noronha_logo_ui_atlas.png`
   - Resolution: `1024 x 512`; SHA-256: `CAB6315FAF996CDCFFC22B955A2F3F1653CAD90F253B04288F4A7D5777829EF5`
-- Runtime asset in this PBO: `noronha_logo_ui.edds` (SHA-256 `686713EFC4496F68CE794B0DF4D6E2A0066AD4AC77002D7EA45721AD26D6486A`), loaded directly by the two logo layouts through `imageTexture "{A1AB393B3727546D}Noronha/loading/data/noronha_logo_ui.edds"`.
+- Runtime asset in this PBO: `noronha_logo_ui.edds` (SHA-256 `686713EFC4496F68CE794B0DF4D6E2A0066AD4AC77002D7EA45721AD26D6486A`), loaded directly by the two logo layouts through `imageTexture "{A1AB393B3727546D}nw/loading/data/noronha_logo_ui.edds"`.
 
 The transparent derivative has no backing panel, outline, shadow, added text, or logo redesign. It is used as a secondary map signature in the upper-right loading workspace and below the upper-right main-menu controls. The vanilla DayZ logo remains untouched.

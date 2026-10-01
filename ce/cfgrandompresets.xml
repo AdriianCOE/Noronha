@@ -6,9 +6,9 @@
 				<item name="Apple" chance="0.036"/>
 		</cargo>
 		<cargo chance="0.16" name="foodVillage">
-				<item name="Noronha_Guarana" chance="0.004"/>
-				<item name="Noronha_Skol" chance="0.004"/>
-				<item name="Noronha_Pinga" chance="0.004"/>
+				<item name="NW_Drink_Guarana" chance="0.004"/>
+				<item name="NW_Drink_Skol" chance="0.004"/>
+				<item name="NW_Drink_Pinga" chance="0.004"/>
 				<item name="SodaCan_Cola" chance="0.004"/>
 				<item name="SodaCan_Pipsi" chance="0.004"/>
 				<item name="SodaCan_Spite" chance="0.004"/>
@@ -27,9 +27,9 @@
 				<item name="Chips" chance="0.011"/>
 		</cargo>
 		<cargo chance="0.16" name="foodCity"> <!--same as the one above - just preparing -->
-				<item name="Noronha_Guarana" chance="0.004"/>
-				<item name="Noronha_Skol" chance="0.004"/>
-				<item name="Noronha_Pinga" chance="0.004"/>
+				<item name="NW_Drink_Guarana" chance="0.004"/>
+				<item name="NW_Drink_Skol" chance="0.004"/>
+				<item name="NW_Drink_Pinga" chance="0.004"/>
 				<item name="SodaCan_Cola" chance="0.004"/>
 				<item name="SodaCan_Pipsi" chance="0.004"/>
 				<item name="SodaCan_Spite" chance="0.004"/>
@@ -48,8 +48,8 @@
 				<item name="Chips" chance="0.011"/>
 		</cargo>
 		<cargo chance="0.1" name="foodArmy">
-				<item name="Noronha_Guarana" chance="0.007"/>
-				<item name="Noronha_Skol" chance="0.007"/>
+				<item name="NW_Drink_Guarana" chance="0.007"/>
+				<item name="NW_Drink_Skol" chance="0.007"/>
 				<item name="SodaCan_Cola" chance="0.007"/>
 				<item name="SodaCan_Pipsi" chance="0.007"/>
 				<item name="SodaCan_Spite" chance="0.007"/>
@@ -114,8 +114,8 @@
 				<item name="CombatKnife" chance="0.014"/>
 				<item name="Morphine" chance="0.014"/>
 				<item name="BandageDressing" chance="0.014"/>
-				<item name="Noronha_Guarana" chance="0.042"/>
-				<item name="Noronha_Skol" chance="0.014"/>
+				<item name="NW_Drink_Guarana" chance="0.042"/>
+				<item name="NW_Drink_Skol" chance="0.014"/>
 		</cargo>
 		<cargo chance="0.15" name="toolsHunter">
 				<item name="Paper" chance="0.014"/>
@@ -460,10 +460,10 @@
 
 		<!--POLICE ATTACHMENTS-->
 		<attachments chance="0.20" name="hatsPolice">
-				<item name="Noronha_Policia_Cap" chance="0.200"/>
+				<item name="NW_Headgear_Policia_Cap" chance="0.200"/>
 		</attachments>
 		<attachments chance="1.00" name="vestsPolice">
-				<item name="Noronha_Policia_Vest" chance="1.00"/>
+				<item name="NW_Vest_Policia" chance="1.00"/>
 		</attachments>
 		
 		<!--PRISONER ATTACHMENTS-->
@@ -592,9 +592,9 @@
 			<item name="Whetstone" chance="0.05"/>
 		</cargo>
 		<cargo chance="1.0" name="Xmas_Food_Small">
-			<item name="Noronha_Guarana" chance="0.036"/>
-			<item name="Noronha_Skol" chance="0.036"/>
-			<item name="Noronha_Pinga" chance="0.036"/>
+			<item name="NW_Drink_Guarana" chance="0.036"/>
+			<item name="NW_Drink_Skol" chance="0.036"/>
+			<item name="NW_Drink_Pinga" chance="0.036"/>
 			<item name="Zagorky" chance="0.036"/>
 			<item name="ZagorkyChocolate" chance="0.036"/>
 			<item name="ZagorkyPeanuts" chance="0.036"/>

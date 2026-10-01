@@ -8274,7 +8274,7 @@ AVAILABLE CATEGORIES:
           <usage name="Farm"/>
           <usage name="Village"/>
       </type>
-  <type name="Noronha_Tshirt_Palmeiras">
+  <type name="NW_Tshirt_Palmeiras">
           <nominal>6</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8288,7 +8288,7 @@ AVAILABLE CATEGORIES:
           <usage name="Village"/>
           <usage name="Farm"/>
       </type>
-  <type name="Noronha_Tshirt_Corinthians">
+  <type name="NW_Tshirt_Corinthians">
           <nominal>6</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8302,7 +8302,7 @@ AVAILABLE CATEGORIES:
           <usage name="Village"/>
           <usage name="Farm"/>
       </type>
-  <type name="Noronha_Tshirt_Flamengo">
+  <type name="NW_Tshirt_Flamengo">
           <nominal>6</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8316,7 +8316,7 @@ AVAILABLE CATEGORIES:
           <usage name="Village"/>
           <usage name="Farm"/>
       </type>
-  <type name="Noronha_Tshirt_Sport">
+  <type name="NW_Tshirt_Sport">
           <nominal>6</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8330,7 +8330,7 @@ AVAILABLE CATEGORIES:
           <usage name="Village"/>
           <usage name="Farm"/>
       </type>
-  <type name="Noronha_EB_Jacket">
+  <type name="NW_Jacket_EB">
           <nominal>8</nominal>
           <lifetime>14400</lifetime>
           <restock>600</restock>
@@ -8342,7 +8342,7 @@ AVAILABLE CATEGORIES:
           <category name="clothes"/>
           <usage name="Military"/>
       </type>
-  <type name="Noronha_EB_Pants">
+  <type name="NW_Pants_EB">
           <nominal>8</nominal>
           <lifetime>14400</lifetime>
           <restock>600</restock>
@@ -8354,7 +8354,7 @@ AVAILABLE CATEGORIES:
           <category name="clothes"/>
           <usage name="Military"/>
       </type>
-  <type name="Noronha_EB_Cap">
+  <type name="NW_Headgear_EB_Cap">
           <nominal>8</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8366,7 +8366,7 @@ AVAILABLE CATEGORIES:
           <category name="clothes"/>
           <usage name="Military"/>
       </type>
-  <type name="Noronha_EB_Boonie">
+  <type name="NW_Headgear_EB_Boonie">
           <nominal>8</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -8378,7 +8378,7 @@ AVAILABLE CATEGORIES:
           <category name="clothes"/>
           <usage name="Military"/>
       </type>
-  <type name="Noronha_Policia_Jacket">
+  <type name="NW_Jacket_Policia">
           <nominal>6</nominal>
           <lifetime>7200</lifetime>
           <restock>0</restock>
@@ -8393,7 +8393,7 @@ AVAILABLE CATEGORIES:
           <value name="Tier2"/>
           <value name="Tier3"/>
       </type>
-  <type name="Noronha_Policia_Pants">
+  <type name="NW_Pants_Policia">
           <nominal>6</nominal>
           <lifetime>7200</lifetime>
           <restock>0</restock>
@@ -8408,7 +8408,7 @@ AVAILABLE CATEGORIES:
           <value name="Tier2"/>
           <value name="Tier3"/>
       </type>
-  <type name="Noronha_Policia_Vest">
+  <type name="NW_Vest_Policia">
           <nominal>6</nominal>
           <lifetime>7200</lifetime>
           <restock>0</restock>
@@ -8423,7 +8423,7 @@ AVAILABLE CATEGORIES:
           <value name="Tier2"/>
           <value name="Tier3"/>
       </type>
-  <type name="Noronha_Policia_Cap">
+  <type name="NW_Headgear_Policia_Cap">
           <nominal>8</nominal>
           <lifetime>7200</lifetime>
           <restock>0</restock>

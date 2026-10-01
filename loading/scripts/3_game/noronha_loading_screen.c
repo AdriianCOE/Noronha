@@ -2,9 +2,9 @@ class NoronhaLoadingScreenHelper
 {
 	static const string BACKGROUND_IMAGE = "set:noronha_loading image:loading1";
 	static const string VANILLA_REVEAL_MASK = "{F2CEA7E35B785FB7}Gui/textures/loading_screens/loading_screen_3_mask.edds";
-	static const string HINTS_PATH = "Noronha/loading/data/hints.json";
-	static const string LOADING_LOGO_LAYOUT = "Noronha/loading/gui/layouts/noronha_loading_logo.layout";
-	static const string MAIN_MENU_LOGO_LAYOUT = "Noronha/loading/gui/layouts/noronha_main_menu_logo.layout";
+	static const string HINTS_PATH = "nw/loading/data/hints.json";
+	static const string LOADING_LOGO_LAYOUT = "nw/loading/gui/layouts/noronha_loading_logo.layout";
+	static const string MAIN_MENU_LOGO_LAYOUT = "nw/loading/gui/layouts/noronha_main_menu_logo.layout";
 
 	static void ApplyBackground(Widget root, string backgroundWidgetName, bool preserveReveal)
 	{

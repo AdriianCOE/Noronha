@@ -1329,7 +1329,7 @@ AVAILABLE CATEGORIES:
           <category name="food"/>
           <usage name="Farm"/>
       </type>
-  <type name="Noronha_Guarana">
+  <type name="NW_Drink_Guarana">
           <nominal>10</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -1342,7 +1342,7 @@ AVAILABLE CATEGORIES:
           <usage name="Town"/>
           <usage name="Village"/>
       </type>
-  <type name="Noronha_Skol">
+  <type name="NW_Drink_Skol">
           <nominal>10</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>
@@ -1355,7 +1355,7 @@ AVAILABLE CATEGORIES:
           <usage name="Town"/>
           <usage name="Village"/>
       </type>
-  <type name="Noronha_Pinga">
+  <type name="NW_Drink_Pinga">
           <nominal>16</nominal>
           <lifetime>14400</lifetime>
           <restock>0</restock>

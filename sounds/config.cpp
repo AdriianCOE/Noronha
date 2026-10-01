@@ -1,6 +1,6 @@
 class CfgPatches
 {
-    class Noronha_Sounds
+    class NW_Sounds
     {
         requiredAddons[]=
         {

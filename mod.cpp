@@ -1,7 +1,7 @@
 name = "Fernando de Noronha";
-picture = "Noronha/loading/data/noronha_logo_ui.edds";
+picture = "nw/loading/data/noronha_logo_ui.edds";
 logo = "";
-logoSmall = "Noronha/loading/data/noronha_logo_ui.edds";
+logoSmall = "nw/loading/data/noronha_logo_ui.edds";
 logoOver = "";
 tooltip = "Mapa de sobrevivência tropical inspirado em Fernando de Noronha.";
 overview = "Sobreviva em uma ilha tropical brasileira inspirada no arquipélago de Fernando de Noronha.";

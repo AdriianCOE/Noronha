@@ -1,6 +1,6 @@
 class CfgPatches
 {
-    class Noronha_data
+    class NW_Data
     {
         requiredAddons[] = {};
     };

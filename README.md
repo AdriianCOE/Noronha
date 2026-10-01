@@ -28,13 +28,13 @@
 
 Este é o repositório oficial do mapa: world, CE exportada, navmesh, sons,
 configurações e artefatos runtime necessários para os PBOs. O addon de itens é
-independente em [Noronha_Items](https://github.com/AdriianCOE/Noronha_Items) e é
+independente em [NW_Items](https://github.com/AdriianCOE/NW_Items) e é
 uma dependência do CE.
 
 O [`mod.cpp`](mod.cpp) na raiz é o metadata de distribuição do mod. Após o
 build dos addons com RaG, ele deve ser copiado para a raiz da pasta final
 `@FernandoDeNoronha`; os caminhos de `picture` e `logoSmall` referenciam a
-logo virtual fornecida pelo addon `Noronha_Loading`.
+logo virtual fornecida pelo addon `NW_Loading`.
 
 - Mapa Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894>
 - Noronha Items Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3698170839>

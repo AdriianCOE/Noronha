@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class Noronha_Loading
+	class NW_Loading
 	{
 		units[]={};
 		weapons[]={};
@@ -14,9 +14,9 @@ class CfgPatches
 };
 class CfgMods
 {
-	class Noronha_Loading
+	class NW_Loading
 	{
-		dir="Noronha/loading";
+		dir="nw/loading";
 		type="mod";
 		dependencies[]=
 		{
@@ -27,14 +27,14 @@ class CfgMods
 		{
 			class imageSets
 			{
-				files[]={"Noronha/loading/data/noronha_loading.imageset"};
+				files[]={"nw/loading/data/noronha_loading.imageset"};
 			};
 			class gameScriptModule
 			{
 				value="";
 				files[]=
 				{
-					"Noronha/loading/scripts/3_game"
+					"nw/loading/scripts/3_game"
 				};
 			};
 			class missionScriptModule
@@ -42,7 +42,7 @@ class CfgMods
 				value="";
 				files[]=
 				{
-					"Noronha/loading/scripts/5_mission"
+					"nw/loading/scripts/5_mission"
 				};
 			};
 		};

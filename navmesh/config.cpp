@@ -1,6 +1,6 @@
 class cfgpatches
 {
-    class Noronha_navmesh
+    class NW_Navmesh
     {
         requiredAddons[] = {};
     };

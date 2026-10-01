@@ -1,6 +1,6 @@
 class CfgPatches
 {
-    class Noronha_CE
+    class NW_CE
     {
         units[]={};
         weapons[]={};
@@ -8,7 +8,8 @@ class CfgPatches
         requiredAddons[]=
         {
             "DZ_Data",
-            "Noronha_Items"
+            "NW_Items",
+            "NW_Static"
         };
     };
 };
