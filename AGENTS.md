@@ -26,7 +26,7 @@ Noronha e um mapa DayZ fortemente inspirado em Fernando de Noronha, mas nao e um
 - `willy92wins/dayz-mcp`: ferramenta DEV/QA para observar e controlar DayZ em execucao. Deve permanecer separada do mod publicado e nunca virar dependencia runtime de Noronha.
 - `TrueDolphin/references`: biblioteca de exemplos e ideias. Como nao foi observado `LICENSE` na raiz durante a auditoria de 2026-08-26, trate como **reference-only**: aprenda a tecnica e reimplemente quando util; nao copie arquivos inteiros para Noronha sem permissao/licenca clara.
 
-Veja `docs/ENGINEERING_REFERENCES.md` para o papel de cada referencia e `docs/BUILD.md` para o workflow de build.
+Veja `P:/Noronha_Workspace/docs/04_REFERENCES/modding-tools.md` para o papel de cada referencia e `P:/Noronha_Workspace/docs/06_BUILD_RELEASE/BUILD.md` para o workflow de build.
 
 ## Hierarquia de evidencia
 

@@ -31,7 +31,7 @@ configurações e artefatos runtime necessários para os PBOs. O addon de itens 
 independente em [NW_Items](https://github.com/AdriianCOE/NW_Items) e é
 uma dependência do CE.
 
-O [`mod.cpp`](mod.cpp) na raiz é o metadata de distribuição do mod. Após o
+O [`mod.cpp`](P:/Noronha/mod.cpp) na raiz é o metadata de distribuição do mod. Após o
 build dos addons com RaG, ele deve ser copiado para a raiz da pasta final
 `@FernandoDeNoronha`; os caminhos de `picture` e `logoSmall` referenciam a
 logo virtual fornecida pelo addon `NW_Loading`.
@@ -39,10 +39,10 @@ logo virtual fornecida pelo addon `NW_Loading`.
 - Mapa Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3682451894>
 - Noronha Items Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3698170839>
 
-A documentação técnica está em [`docs/`](docs/): arquitetura, dependências, CE,
+A documentação técnica está em [`docs/`](P:/Noronha_Workspace/docs/00_START_HERE/README.md): arquitetura, dependências, CE,
 terreno, build, desenvolvimento, responsabilidades entre repositórios e
 auditorias. O WRP DEV validado é rastreado por Git LFS; consulte
-[`docs/TERRAIN.md`](docs/TERRAIN.md) para identidade, proveniência e limites do
+[`docs/TERRAIN.md`](P:/Noronha_Workspace/docs/03_ASSETS/terrain/TERRAIN_MASTER.md) para identidade, proveniência e limites do
 baseline.
 
 ---
@@ -81,3 +81,7 @@ O projeto usa uma área de mundo de **10,24 km × 10,24 km** e mantém a forma g
 e vários marcos reconhecíveis de Fernando de Noronha. A escala percebida e o
 conteúdo jogável, porém, são adaptados ao DayZ; o projeto não assume fidelidade
 1:1 como requisito de design.
+
+## Documentação central Noronha
+
+[START HERE](P:/Noronha_Workspace/docs/00_START_HERE/README.md) — estado atual, sources, pipelines, tools, skills e sites. Os relatórios anteriores foram centralizados; não tratar paths históricos como instruções atuais de deploy.
